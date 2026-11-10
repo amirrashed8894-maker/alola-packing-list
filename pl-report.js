@@ -111,7 +111,7 @@ async function render(d){const st=stage();st.innerHTML=pageHTML(d);if(document.f
  await Promise.all([...st.querySelectorAll('img')].map(img=>img.complete&&img.naturalWidth?1:new Promise(r=>{img.onload=img.onerror=r})));
  const page=st.querySelector('.page');const f=fit(page);return{st,page,f}}
 window.PL={CSS,aoa,analyse,unitKg,
- fileName(h){const dt=parts(h.date);return ('باكينج ليست العلا '+(h.cont||'')+' '+dt.iso).replace(/[\\/:*?"<>|]+/g,'-').replace(/\s+/g,' ').trim()+'.pdf'},
+ fileName(h){const dt=parts(h.date);const c=String(h.cont||'').replace(/[^A-Za-z0-9-]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'')||'NA';const d=/^\d{4}-\d{2}-\d{2}$/.test(dt.iso)?dt.iso:new Date().toISOString().slice(0,10);return 'PackingList_'+c+'_'+d+'.pdf'},
  async preview(d,host){const{page,f}=await render(d);const cl=page.cloneNode(true);host.innerHTML='';host.appendChild(cl);return f},
  async pdf(d){const{st,page,f}=await render(d);const{jsPDF}=window.jspdf;const pdf=new jsPDF({unit:'pt',format:'a4',compress:true});const W=595.28,H=841.89;
   const cv=await html2canvas(page,{scale:2,backgroundColor:'#fff',logging:false,width:794,height:1123,windowWidth:794});
