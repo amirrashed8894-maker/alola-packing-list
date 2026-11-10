@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2F5233">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="باكينج ليست العلا">
+<title>باكينج ليست — شركة العلا</title>
+<style>
+@font-face{font-family:Cairo;font-weight:200 1000;src:url(fonts/cairo-arabic.woff2) format('woff2');unicode-range:U+0600-06FF,U+0750-077F,U+FB50-FDFF,U+FE70-FEFF,U+200C-200E}
+@font-face{font-family:Cairo;font-weight:200 1000;src:url(fonts/cairo-latin.woff2) format('woff2')}
+:root{--g:#2F5233;--g2:#4a7c50;--bad:#d93025;--warn:#f9ab00;--bg:#f4f6f4}
+*{box-sizing:border-box}
+body{margin:0;font-family:Cairo,"Segoe UI",Tahoma,Arial,sans-serif;background:var(--bg);color:#222;font-size:16px}
+header.bar{position:sticky;top:0;z-index:5;background:var(--g);color:#fff;padding:8px 14px;padding-top:max(8px,env(safe-area-inset-top));display:flex;align-items:center;justify-content:space-between;gap:8px}
+header.bar .t{display:flex;align-items:center;gap:10px}header.bar img{height:38px;background:#fff;border-radius:8px;padding:2px 4px}
+header.bar h1{font-size:18px;margin:0;line-height:1.2}header.bar h1 small{display:block;font-size:11.5px;font-weight:400;opacity:.85}
+.stat{font-size:13px;text-align:left;line-height:1.35}
+main{padding:12px;max-width:900px;margin:auto;padding-bottom:110px}
+.card{background:#fff;border-radius:14px;padding:12px;margin-bottom:12px;box-shadow:0 1px 3px #0002}
+.card h2{font-size:16px;margin:0 0 6px;color:var(--g)}
+label{display:block;font-size:13px;color:#555;margin:8px 0 4px}
+input,select{width:100%;min-height:46px;font-size:16px;padding:8px 10px;border:1.5px solid #ccc;border-radius:10px;background:#fff;font-family:inherit}
+input:focus,select:focus{outline:none;border-color:var(--g2);box-shadow:0 0 0 3px #4a7c5033}
+input[readonly]{background:#f1f4f1;color:#334}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+@media(max-width:420px){.grid2{grid-template-columns:1fr}}
+.row{border:1.5px solid #e2e2e2;border-radius:12px;padding:10px;margin-bottom:10px;background:#fff}
+.row .top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.num{min-width:32px;height:32px;border-radius:50%;background:var(--g);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px}
+.pin{flex:1;display:flex;direction:ltr;align-items:stretch}
+.pin span{display:flex;align-items:center;padding:0 10px;background:#e8efe8;border:1.5px solid #ccc;border-right:0;border-radius:10px 0 0 10px;font-weight:800;color:var(--g)}
+.pin input{border-radius:0 10px 10px 0;font-weight:bold;letter-spacing:1px;text-align:center}
+.rgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.sl{font-size:11.5px;color:#777;margin:4px 0 2px}
+.msg{font-size:12.5px;color:var(--bad);margin-top:4px}
+.err{border-color:var(--bad)!important;background:#fdecea!important;color:var(--bad)}
+.miss{border-color:var(--warn)!important;background:#fff8e1!important}
+.row.dup{border-color:var(--bad)}
+.rb{display:flex;gap:6px}.rb button{min-height:38px;font-size:13px;padding:4px 10px}
+button{font-family:inherit;font-size:16px;min-height:48px;border:0;border-radius:12px;padding:10px 14px;cursor:pointer}
+.btn{background:var(--g);color:#fff}.btn2{background:#e8efe8;color:var(--g)}.btn3{background:#fdecea;color:var(--bad)}
+.actions{position:fixed;bottom:0;left:0;right:0;background:#fff;box-shadow:0 -2px 8px #0002;padding:8px;padding-bottom:max(8px,env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(4,1fr);gap:6px;z-index:5}
+.actions button{font-size:14px;padding:6px 4px}
+table.sum{width:100%;border-collapse:collapse;font-size:14px}
+table.sum th,table.sum td{border:1px solid #ddd;padding:6px;text-align:center}
+table.sum th{background:var(--g);color:#fff}table.sum tr.sub td{background:#eaf5e6;font-weight:700}table.sum tr.gt td{background:var(--g);color:#fff;font-weight:800}
+.alerts div{padding:8px 10px;border-radius:10px;margin-bottom:6px;font-size:14px}
+.a-bad{background:#fdecea;color:var(--bad)}.a-ok{background:#e6f4ea;color:#137333}
+.hint{font-size:12.5px;color:#777}
+#busy{position:fixed;inset:0;background:#0007;color:#fff;display:none;align-items:center;justify-content:center;font-size:18px;z-index:200}
+#pv{display:none;position:fixed;inset:0;background:#000b;z-index:150;overflow:auto;padding:12px}
+#pv .wrap{width:794px;transform-origin:top right;margin-inline-start:auto}
+#pv .tb{position:sticky;top:0;display:flex;gap:8px;justify-content:center;margin-bottom:10px;z-index:2}
+#toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:#1d3b21;color:#fff;padding:8px 16px;border-radius:10px;display:none;z-index:300;font-size:14px}
+</style>
+</head>
+<body>
+<script>window.ALOLA_AUTH_APP='packing';</script>
+<script src="auth-gate.js?v=3"></script>
+<header class="bar"><div class="t"><img src="alola_logo_green.png" alt=""><h1>باكينج ليست<small>شركة العلا لفرز الحاصلات الزراعية</small></h1></div><div class="stat" id="stat"></div></header>
+<main>
+ <div class="card"><h2>بيانات الشحنة</h2>
+  <div class="grid2">
+   <div><label>الرقم المرجعي</label><input id="h_ref" readonly></div>
+   <div><label>تاريخ التحميل *</label><input id="h_date" type="date"></div>
+   <div><label>نوع الشحنة</label><select id="h_kind"><option>براد</option><option>حاوية</option></select></div>
+   <div><label>رقم الحاوية / البراد *</label><input id="h_cont" dir="ltr" autocapitalize="characters" placeholder="مثال: BRD-1234"></div>
+   <div><label>رقم جهاز التبريد</label><input id="h_reefer" dir="ltr" placeholder="مثال: GS-12345"></div>
+   <div><label>رقم اللوط</label><input id="h_lot" dir="ltr" placeholder="لو أكتر من لوط افصل بفاصلة"></div>
+   <div><label>اسم العميل</label><input id="h_customer" list="dl_customer" placeholder="اكتب اسم العميل"></div>
+   <div><label>الوجهة</label><input id="h_dest" list="dl_dest" placeholder="اكتب الوجهة"></div>
+   <div><label>الخط الملاحي</label><input id="h_line" list="dl_line" placeholder="اكتب الخط الملاحي"></div>
+   <div><label>اسم السائق</label><input id="h_driver" list="dl_driver"></div>
+   <div><label>النولون (ر.س)</label><input id="h_freight" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0"></div>
+   <div><label>سلف السائق (ر.س) — اختياري</label><input id="h_adv" type="number" inputmode="decimal" min="0" step="0.01" placeholder="لا يوجد"></div>
+   <div><label>الباقي للسائق (ر.س)</label><input id="h_rest" readonly></div>
+  </div>
+ </div>
+ <div class="card"><h2>الباليتات</h2><div class="hint">رقم الباليت أرقام بس (حرف P بيتضاف لوحده). أي رقم غلط أو مكرر بيظهر باللون الأحمر.</div><div id="rows" style="margin-top:8px"></div>
+  <div class="grid2"><button class="btn2" id="bAdd" type="button">+ باليت جديد</button><button class="btn2" id="bAdd5" type="button">+ 5 باليتات بنفس البيانات</button></div>
+ </div>
+ <div class="card"><h2>ملخص الأصناف حسب المقاس</h2><div id="sum"></div></div>
+ <div class="card alerts" id="alerts"></div>
+ <div class="hint" style="text-align:center">نسخة v1 — تعمل بدون إنترنت بعد أول فتح · البيانات بتتحفظ على الجهاز تلقائياً</div>
+</main>
+<div class="actions"><button class="btn" id="bPdf" type="button">حفظ PDF</button><button class="btn2" id="bPrev" type="button">معاينة</button><button class="btn2" id="bShare" type="button">مشاركة</button><button class="btn3" id="bNew" type="button">باكينج جديد</button></div>
+<datalist id="dl_customer"></datalist><datalist id="dl_dest"></datalist><datalist id="dl_line"></datalist><datalist id="dl_driver"></datalist>
+<div id="pv"><div class="tb"><button class="btn" id="pvPdf" type="button">حفظ PDF</button><button class="btn2" id="pvClose" type="button">إغلاق</button></div><div class="wrap" id="pvw"></div></div>
+<div id="busy">جاري تجهيز الـ PDF…</div><div id="toast"></div>
+<script src="html2canvas.min.js"></script><script src="jspdf.umd.min.js"></script><script src="pl-report.js?v=1"></script><script src="app.js?v=1"></script>
+<script>if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;let done=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!done){done=true;location.reload()}});
+navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{r.update();document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')r.update()})}).catch(()=>{})}</script>
+</body>
+</html>
