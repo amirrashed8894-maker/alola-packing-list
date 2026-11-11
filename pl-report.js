@@ -48,7 +48,7 @@ const CSS=`@font-face{font-family:Cairo;font-weight:200 1000;src:url(fonts/cairo
 #plstage .pn .h{font-size:${K(10.5)};font-weight:800;color:#16331a;display:flex;justify-content:space-between;gap:8px}
 #plstage .pn .h span{color:#4b5f4a;font-weight:700}
 #plstage .pn .ids{direction:ltr;text-align:left;font-size:${K(10)};line-height:1.5;color:#1c241c;font-weight:700;word-spacing:2px}
-#plstage .pn .ids span{display:inline-block;white-space:nowrap;margin-right:8px}#plstage .pn .ids em{font-style:normal;color:#222;font-weight:700;font-size:${K(9)};background:#ececec;border-radius:3px;padding:0 4px;margin-inline-start:2px}
+#plstage .pn .ids span{display:inline-block;white-space:nowrap;margin-right:8px}#plstage .pn .ids em{font-style:normal;color:#5c735b;font-weight:600;font-size:${K(8.5)}}
 #plstage .note{font-size:${K(9)};color:#5c735b;margin:${K(2)} 2px}
 #plstage .sg{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:${K(14)};padding:0 8px;font-size:${K(11)};text-align:center}
 #plstage .sg div{border-top:1.5px solid #9fb59c;padding-top:4px;color:#2d3b2c;font-weight:700}
@@ -67,10 +67,10 @@ function analyse(rows){const R=rows.map(r=>({...r,_n:parseInt(r.n,10)||0,_kg:(pa
  list.forEach(g=>{g.p=g.sizes.reduce((a,x)=>a+x.rows.length,0);g.n=g.sizes.reduce((a,x)=>a+x.n,0);g.kg=g.sizes.reduce((a,x)=>a+x.kg,0);g.sizes.forEach(x=>x.rows.sort((a,b)=>String(a.p).localeCompare(String(b.p),'en',{numeric:true})))});
  return{R,list,P:R.length,N:R.reduce((a,r)=>a+r._n,0),KG:R.reduce((a,r)=>a+r._kg,0),S:list.reduce((a,g)=>a+g.sizes.length,0)}}
 function summary(A){let b='';A.list.forEach(g=>{g.sizes.forEach((x,j)=>{const ct=[...x.ct.entries()].map(([k,c])=>e(k)+(x.ct.size>1?` <small>(${c})</small>`:'')).join('، ');
-  b+=`<tr>${j?'':`<td class="v" rowspan="${g.sizes.length}">${e(g.v)}</td>`}<td><b dir="ltr">${e(x.s)}</b></td><td class="r">${ct}</td><td>${x.rows.length}</td><td>${nf(x.n)}</td></tr>`});
-  b+=`<tr class="sub"><td class="r" colspan="3">إجمالي ${e(g.v)} — ${g.sizes.length} مقاس</td><td>${g.p}</td><td>${nf(g.n)}</td></tr>`});
- b+=`<tr class="gt"><td class="r" colspan="3">الإجمالي العام — ${A.list.length} صنف · ${A.S} مقاس</td><td>${A.P}</td><td>${nf(A.N)}</td></tr>`;
- return `<table><thead><tr><th style="width:15%">الصنف</th><th style="width:9%">المقاس</th><th>نوع الكرتون · اسم الكرتون</th><th style="width:10%">باليتات</th><th style="width:16%">كراتين / صناديق</th></tr></thead><tbody>${b}</tbody></table>`}
+  b+=`<tr>${j?'':`<td class="v" rowspan="${g.sizes.length}">${e(g.v)}</td>`}<td><b dir="ltr">${e(x.s)}</b></td><td class="r">${ct}</td><td>${x.rows.length}</td><td>${nf(x.n)}</td><td>${x.kg?nf(x.kg):'—'}</td></tr>`});
+  b+=`<tr class="sub"><td class="r" colspan="3">إجمالي ${e(g.v)} — ${g.sizes.length} مقاس</td><td>${g.p}</td><td>${nf(g.n)}</td><td>${g.kg?nf(g.kg):'—'}</td></tr>`});
+ b+=`<tr class="gt"><td class="r" colspan="3">الإجمالي العام — ${A.list.length} صنف · ${A.S} مقاس</td><td>${A.P}</td><td>${nf(A.N)}</td><td>${A.KG?nf(A.KG):'—'}</td></tr>`;
+ return `<table><thead><tr><th style="width:15%">الصنف</th><th style="width:9%">المقاس</th><th>نوع الكرتون · اسم الكرتون</th><th style="width:10%">باليتات</th><th style="width:14%">كراتين / صناديق</th><th style="width:14%">الوزن الصافي كجم</th></tr></thead><tbody>${b}</tbody></table>`}
 function palBlock(A){return '<div class="pns">'+A.list.map(g=>g.sizes.map(x=>`<div class="pn"><div class="h"><b>${e(g.v)} · مقاس <span dir="ltr">${e(x.s)}</span></b><span>${x.rows.length} باليت · ${nf(x.n)} كرتونة</span></div><div class="ids">${x.rows.map(r=>`<span>${e(r.P)}<em>(${r._n})</em></span>`).join('')}</div></div>`).join('')).join('')+'</div>'}
 function infoCell(l,v,ltr){return `<div><small>${l}</small><b${ltr?' dir="ltr"':''}>${e(v||'—')}</b></div>`}
 function pageHTML(d){const h=d.h,dt=parts(h.date),A=analyse(d.rows);const kind=h.kind||'براد';
@@ -85,7 +85,7 @@ function pageHTML(d){const h=d.h,dt=parts(h.date),A=analyse(d.rows);const kind=h
  <div class="k"><div><small>عدد الباليتات</small><b>${A.P}</b></div><div><small>إجمالي الكراتين / الصناديق</small><b>${nf(A.N)}</b></div><div><small>الوزن الصافي (كجم)</small><b>${A.KG?nf(A.KG):'—'}</b></div><div><small>الأصناف · المقاسات</small><b>${A.list.length} · ${A.S}</b></div></div>
  <h4><i></i>ملخص الأصناف حسب المقاس <small>— باليتات وكراتين كل مقاس، إجمالي كل صنف، والإجمالي العام</small></h4>${summary(A)}
  <h4><i></i>أرقام الباليتات <small>— مجمعة حسب الصنف والمقاس، وبين القوسين عدد الكراتين على الباليت</small></h4>${palBlock(A)}
- <div class="note">بيانات الاستيراد لبرنامج العلا مدمجة داخل ملف الـ PDF.</div>
+ <div class="note">الوزن الصافي = عدد الكراتين × وزن الكرتونة من نوع الكرتون. بيانات الاستيراد لبرنامج العلا مدمجة داخل ملف الـ PDF.</div>
  <div class="sg"><div>مسؤول التحميل</div><div>السائق${h.driver?': '+e(h.driver):''}</div><div>التوقيع والاعتماد</div></div>
  <div class="dep"><img src="rashed_logo_gray.png" alt=""><span>يعتمد: شركة الراشد للتجارة</span></div>
  </div>${foot(h,dt)}</div>`}
