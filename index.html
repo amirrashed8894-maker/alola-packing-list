@@ -86,13 +86,13 @@ table.sum th{background:var(--g);color:#fff}table.sum tr.sub td{background:#eaf5
  </div>
  <div class="card"><h2>ملخص الأصناف حسب المقاس</h2><div id="sum"></div></div>
  <div class="card alerts" id="alerts"></div>
- <div class="hint" style="text-align:center">نسخة v2 — تعمل بدون إنترنت بعد أول فتح · البيانات بتتحفظ على الجهاز تلقائياً</div>
+ <div class="hint" style="text-align:center">نسخة v3 — تعمل بدون إنترنت بعد أول فتح · البيانات بتتحفظ على الجهاز تلقائياً</div>
 </main>
 <div class="actions"><button class="btn" id="bPdf" type="button">حفظ PDF</button><button class="btn2" id="bPrev" type="button">معاينة</button><button class="btn2" id="bShare" type="button">مشاركة</button><button class="btn3" id="bNew" type="button">باكينج جديد</button></div>
 <datalist id="dl_customer"></datalist><datalist id="dl_dest"></datalist><datalist id="dl_line"></datalist><datalist id="dl_driver"></datalist>
 <div id="pv"><div class="tb"><button class="btn" id="pvPdf" type="button">حفظ PDF</button><button class="btn2" id="pvClose" type="button">إغلاق</button></div><div class="wrap" id="pvw"></div></div>
 <div id="busy">جاري تجهيز الـ PDF…</div><div id="toast"></div>
-<script src="html2canvas.min.js"></script><script src="jspdf.umd.min.js"></script><script src="pl-report.js?v=2"></script><script src="app.js?v=2"></script>
+<script src="html2canvas.min.js"></script><script src="jspdf.umd.min.js"></script><script src="pl-report.js?v=3"></script><script src="app.js?v=3"></script>
 <script>if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;let done=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!done){done=true;location.reload()}});
 navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{r.update();document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')r.update()})}).catch(()=>{})}</script>
 </body>
