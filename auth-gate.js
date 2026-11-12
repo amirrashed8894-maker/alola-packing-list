@@ -72,6 +72,8 @@
       '#alola-auth-overlay input:focus{outline:none;border-color:#4a7c50;box-shadow:0 0 0 3px #4a7c5033}',
       '#alola-auth-overlay button.login{width:100%;margin-top:14px;min-height:48px;border:0;border-radius:12px;background:#1d4d2b;color:#fff;font:inherit;font-size:16px;font-weight:700;cursor:pointer}',
       '#alola-auth-overlay button.login:disabled{opacity:.6;cursor:wait}',
+      '#alola-auth-overlay button.amir{width:100%;margin-top:10px;min-height:48px;border:1.5px solid #1d4d2b;border-radius:12px;background:#f4f8f4;color:#1d4d2b;font:inherit;font-size:16px;font-weight:700;cursor:pointer}',
+      '#alola-auth-overlay button.amir:disabled{opacity:.6;cursor:wait}',
       '#alola-auth-overlay .err{min-height:20px;margin-top:10px;color:#b42318;font-size:13.5px;text-align:center;line-height:1.4}',
       '#alola-auth-overlay .hint{margin-top:12px;font-size:12px;color:#777;text-align:center;line-height:1.5}',
       '#alola-auth-bar{position:fixed;top:0;left:0;z-index:2147482990;display:flex;gap:6px;padding:4px;pointer-events:none}',
@@ -102,6 +104,7 @@
       '<label>الباسورد</label>',
       '<input id="alola-auth-pass" type="password" autocomplete="current-password">',
       '<button class="login" id="alola-auth-go" type="button">دخول</button>',
+      APP === 'packing' ? '<button class="amir" id="alola-auth-amir" type="button">دخول أمير</button>' : '',
       '<div class="err" id="alola-auth-err"></div>',
       '<div class="hint">غير حساب أمير: الحساب مربوط بتليفون واحد فقط</div>',
       '</div>'
@@ -109,6 +112,8 @@
     document.body.appendChild(el);
     var go = function () { doLogin(); };
     document.getElementById('alola-auth-go').addEventListener('click', go);
+    var amirBtn = document.getElementById('alola-auth-amir');
+    if (amirBtn) amirBtn.addEventListener('click', function () { doAmirLogin(); });
     document.getElementById('alola-auth-pass').addEventListener('keydown', function (e) {
       if (e.key === 'Enter') go();
     });
@@ -181,6 +186,30 @@
       if (eEl) eEl.textContent = 'تعذر الاتصال بخادم الدخول. حاول مرة أخرى بعد لحظات.';
     } finally {
       if (bEl) { bEl.disabled = false; bEl.textContent = 'دخول'; }
+    }
+  }
+
+  async function doAmirLogin() {
+    var eEl = document.getElementById('alola-auth-err');
+    var bEl = document.getElementById('alola-auth-amir');
+    if (eEl) eEl.textContent = '';
+    if (bEl) { bEl.disabled = true; bEl.textContent = 'جاري الدخول…'; }
+    try {
+      var r = await api('/api/login-amir', {
+        method: 'POST',
+        body: { deviceId: deviceId(), app: APP }
+      });
+      if (!r.data || !r.data.ok) {
+        if (eEl) eEl.textContent = (r.data && r.data.error) || 'فشل الدخول';
+        return;
+      }
+      setSession(r.data.token, r.data.user);
+      hideOverlay();
+      mountBar(r.data.user);
+    } catch (e) {
+      if (eEl) eEl.textContent = 'تعذر الاتصال بخادم الدخول. حاول مرة أخرى بعد لحظات.';
+    } finally {
+      if (bEl) { bEl.disabled = false; bEl.textContent = 'دخول أمير'; }
     }
   }
 
