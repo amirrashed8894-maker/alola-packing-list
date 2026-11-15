@@ -1,4 +1,4 @@
-/*! Alola/Maggi shared login gate — talks to alola-maggi-auth */
+/*! Alola shared login gate v6 — talks to alola-maggi-auth */
 (function () {
   'use strict';
   var API = (window.ALOLA_AUTH_API || 'https://alola-maggi-auth.onrender.com').replace(/\/$/, '');
@@ -10,10 +10,20 @@
     var h = String(location.hostname || '');
     if (h.indexOf('maggi-packing-list') !== -1) return 'maggi';
     if (h.indexOf('alola-packing-list') !== -1) return 'packing';
+    if (h.indexOf('alola-receiving') !== -1) return 'receiving';
     if (h.indexOf('alola-production') !== -1) return 'production';
     if (h.indexOf('alola-quality') !== -1) return 'quality';
     return '';
   })();
+  var AMIR_APPS = ['packing', 'production', 'quality', 'receiving'];
+  var APP_TITLES = { production: 'الإنتاج اليومي — العلا', quality: 'الجودة — العلا', receiving: 'استلام الخام — العلا', packing: 'باكينج ليست العلا', maggi: 'ماجي', cost: 'بيان التكلفة — العلا' };
+  // wake the free auth server early (cold start) while the user is typing
+  var wakeP = null;
+  function wake() {
+    if (wakeP) return wakeP;
+    try { wakeP = fetch(API + '/health', { cache: 'no-store' }).catch(function () { wakeP = null; }); } catch (e) { wakeP = null; }
+    return wakeP;
+  }
   function appAllowed(user) {
     return !!(user && Array.isArray(user.apps) && user.apps.indexOf(APP) !== -1);
   }
@@ -98,15 +108,15 @@
     el.innerHTML = [
       '<div class="box">',
       '<h2>تسجيل الدخول</h2>',
-      '<p class="sub">برامج العلا وماجي — أدخل اليوزر والباسورد</p>',
+      '<p class="sub">' + (APP_TITLES[APP] || 'برامج العلا') + ' — أدخل اليوزر والباسورد</p>',
       '<label>اليوزر</label>',
       '<input id="alola-auth-user" autocomplete="username" autocapitalize="off" spellcheck="false">',
       '<label>الباسورد</label>',
       '<input id="alola-auth-pass" type="password" autocomplete="current-password">',
       '<button class="login" id="alola-auth-go" type="button">دخول</button>',
-      APP === 'packing' ? '<button class="amir" id="alola-auth-amir" type="button">دخول أمير</button>' : '',
+      AMIR_APPS.indexOf(APP) !== -1 ? '<button class="amir" id="alola-auth-amir" type="button">دخول أمير</button>' : '',
       '<div class="err" id="alola-auth-err"></div>',
-      '<div class="hint">غير حساب أمير: الحساب مربوط بتليفون واحد فقط</div>',
+      '<div class="hint">كل حساب يشتغل على جهاز واحد فقط (ما عدا أمير)</div>',
       '</div>'
     ].join('');
     document.body.appendChild(el);
@@ -169,11 +179,15 @@
     if (eEl) eEl.textContent = '';
     if (bEl) { bEl.disabled = true; bEl.textContent = 'جاري الدخول…'; }
     try {
-      var r = await api('/api/login', {
-        method: 'POST',
-        body: { username: username, password: password, deviceId: deviceId(), app: APP },
-        timeout: 60000
-      });
+      var body = { username: username, password: password, deviceId: deviceId(), app: APP };
+      var r;
+      try {
+        r = await api('/api/login', { method: 'POST', body: body, timeout: 60000 });
+      } catch (e1) {
+        if (eEl) eEl.textContent = 'السيرفر بيصحى… لحظات';
+        r = await api('/api/login', { method: 'POST', body: body, timeout: 90000 });
+        if (eEl) eEl.textContent = '';
+      }
       if (!r.data || !r.data.ok) {
         if (r.status === 403 && r.data && r.data.code === 'APP_DENIED') clearSession();
         if (eEl) eEl.textContent = (r.data && r.data.error) || 'فشل الدخول';
@@ -195,10 +209,15 @@
     if (eEl) eEl.textContent = '';
     if (bEl) { bEl.disabled = true; bEl.textContent = 'جاري الدخول…'; }
     try {
-      var r = await api('/api/login-amir', {
-        method: 'POST',
-        body: { deviceId: deviceId(), app: APP }
-      });
+      var body = { deviceId: deviceId(), app: APP };
+      var r;
+      try {
+        r = await api('/api/login-amir', { method: 'POST', body: body, timeout: 60000 });
+      } catch (e1) {
+        if (eEl) eEl.textContent = 'السيرفر بيصحى… لحظات';
+        r = await api('/api/login-amir', { method: 'POST', body: body, timeout: 90000 });
+        if (eEl) eEl.textContent = '';
+      }
       if (!r.data || !r.data.ok) {
         if (eEl) eEl.textContent = (r.data && r.data.error) || 'فشل الدخول';
         return;
@@ -278,6 +297,7 @@
 
   async function boot() {
     injectStyles();
+    wake();
     var token = getToken();
     if (!token) {
       showOverlay();
