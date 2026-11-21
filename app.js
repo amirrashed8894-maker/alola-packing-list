@@ -61,7 +61,7 @@ function upd(){const{errs,used}=check();
  $('stat').innerHTML=`${A.P} باليت<br>${nf(A.N)} كرتونة`;
  let b='';A.list.forEach(g=>{g.sizes.forEach((x,j)=>{b+=`<tr>${j?'':`<td rowspan="${g.sizes.length}"><b>${esc(g.v)}</b></td>`}<td dir="ltr">${esc(x.s)}</td><td>${x.rows.length}</td><td>${nf(x.n)}</td></tr>`});b+=`<tr class="sub"><td colspan="2">إجمالي ${esc(g.v)}</td><td>${g.p}</td><td>${nf(g.n)}</td></tr>`});
  $('sum').innerHTML=A.P?`<table class="sum"><tr><th>الصنف</th><th>المقاس</th><th>باليتات</th><th>كراتين / صناديق</th></tr>${b}<tr class="gt"><td colspan="2">الإجمالي العام</td><td>${A.P}</td><td>${nf(A.N)}</td></tr></table>`:'<div class="hint">لسه مفيش باليتات</div>';
- $('alerts').innerHTML=errs.length?errs.map(x=>`<div class="a-bad">⚠ ${esc(x)}</div>`).join(''):'<div class="a-ok">✔ البيانات كاملة — جاهز لحفظ الـ PDF</div>'}
+ $('alerts').innerHTML=errs.length?errs.map(x=>`<div class="a-bad">⚠ ${esc(x)}</div>`).join(''):'<div class="a-ok">✔ البيانات كاملة — جاهز لعمل الـ PDF</div>'}
 function data(){return{h:{...S.h,cont:(S.h.cont||'').trim(),freight:AD(S.h.freight),adv:AD(S.h.adv)},rows:check().used.map(r=>({p:AD(r.p),P:palId(r),v:r.v,s:r.s,c:r.c,b:r.b,n:AD(r.n)}))}}
 function ready(){const{errs}=check();if(errs.length){alert('مينفعش نطلع الـ PDF قبل تصليح:\n\n• '+errs.join('\n• '));return false}return true}
 function remember(){['customer','dest','line','driver'].forEach(k=>{const v=(S.h[k]||'').trim();if(v&&!HI[k].some(x=>x===v||(k==='customer'&&nameKey(x)===nameKey(v)))){HI[k].unshift(v);HI[k]=HI[k].slice(0,30)}});localStorage.setItem(HK,JSON.stringify(HI))}
@@ -69,13 +69,17 @@ function remember(){['customer','dest','line','driver'].forEach(k=>{const v=(S.h
 function refCheck(){if(syncRef())toast('الرقم المرجعي اتظبط على تاريخ التحميل: '+S.h.ref);const sg=sigOf(S.h);
  if(S.h.sig&&S.h.sig!==sg){if(confirm('الباكينج ليست ده اتطبع قبل كده برقم '+S.h.ref+' لعربية/عميل تاني.\n\nموافق = دي عربية جديدة (رقم مرجعي جديد)\nإلغاء = ده تصحيح لنفس العربية (نفس الرقم)'))S.h.ref=newRef(S.h.date)}
  if(!(S.h.customer||'').trim()&&!confirm('اسم العميل فاضي. تكمّل من غير عميل؟'))return false;return true}
-async function makePdf(){if(!ready())return null;if(!refCheck()){initHeader();return null}save();$('busy').style.display='flex';try{const d=data();const r=await PL.pdf(d);S.h.sig=sigOf(S.h);S.h.issued=new Date().toISOString();save();remember();initHeader();return{blob:r.blob,name:PL.fileName(d.h)}}catch(e){alert('حصل خطأ أثناء تجهيز الـ PDF: '+e.message);return null}finally{$('busy').style.display='none'}}
+async function makePdf(){if(!ready())return null;if(!refCheck()){initHeader();return null}save();$('busy').style.display='flex';try{const d=data();const r=await PL.pdf(d);S.h.sig=sigOf(S.h);S.h.issued=new Date().toISOString();save();remember();initHeader();return{blob:r.blob,name:shareName(d.h)}}catch(e){alert('حصل خطأ أثناء تجهيز الـ PDF: '+e.message);return null}finally{$('busy').style.display='none'}}
+/* v6: اسم الملف عربي + الرقم المرجعي (الكود) */
+function shareName(h){const c=String(h.cont||'').trim().replace(/[\\/:*?"<>|]+/g,'-');return ['باكينج ليست العلا',h.ref,c,h.date].filter(Boolean).join(' — ')+'.pdf'}
+/* v6: معاينة داخل البرنامج ثم «إرسال واتساب» (الملف نفسه). مفيش تحميل تلقائي — «تحميل» من جوه المعاينة بس */
+function preview(f){PdfShare.open(f.blob,f.name,{title:'باكينج ليست '+(S.h.ref||'')})}
 function download(f){const u=URL.createObjectURL(f.blob);const a=document.createElement('a');a.href=u;a.download=f.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000);toast('✔ اتحفظ: '+f.name)}
-$('bPdf').onclick=$('pvPdf').onclick=async()=>{const f=await makePdf();if(f)download(f)};
-$('bShare').onclick=async()=>{const f=await makePdf();if(!f)return;const file=new File([f.blob],f.name,{type:'application/pdf'});if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:f.name})}catch(e){}}else download(f)};
+$('bPdf').onclick=$('pvPdf').onclick=async()=>{const f=await makePdf();if(f)preview(f)};
+$('bShare').onclick=async()=>{const f=await makePdf();if(f)preview(f)};
 $('bPrev').onclick=async()=>{$('busy').style.display='flex';try{const w=$('pvw');const fit=await PL.preview(data(),w);const sc=Math.min(1,(window.innerWidth-24)/794);w.style.transform=`scale(${sc})`;w.style.height=(1123*sc)+'px';$('pv').style.display='block';if(fit.scale<1||fit.k<1)toast('تم تصغير الخط تلقائياً عشان الباكينج يطلع في صفحة واحدة')}finally{$('busy').style.display='none'}};
 $('pvClose').onclick=()=>{$('pv').style.display='none'};
-$('bNew').onclick=()=>{if(!confirm('بدء باكينج ليست جديد؟ البيانات الحالية هتتمسح من الشاشة (احفظ الـ PDF الأول).'))return;S={h:{ref:newRef(today()),date:today(),kind:S.h.kind||'براد'},rows:[blank()]};save();initHeader();renderRows()};
+$('bNew').onclick=()=>{if(!confirm('بدء باكينج ليست جديد؟ البيانات الحالية هتتمسح من الشاشة (ابعت الـ PDF الأول).'))return;S={h:{ref:newRef(today()),date:today(),kind:S.h.kind||'براد'},rows:[blank()]};save();initHeader();renderRows()};
 window.APP={S,data,check,render:()=>{initHeader();renderRows()},set(x){S.h=x.h;S.rows=x.rows;save();initHeader();renderRows()}};
 initHeader();renderRows();save();
 if(_reuse)setTimeout(()=>toast('الفورم ده اتطبع يوم قديم ← التاريخ بقى النهارده ورقم مرجعي جديد '+S.h.ref),300);else if(_fixed)setTimeout(()=>toast('الرقم المرجعي اتظبط على تاريخ التحميل: '+S.h.ref),300);
