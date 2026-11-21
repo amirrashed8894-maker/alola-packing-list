@@ -1,4 +1,4 @@
-/* Alola packing list PWA — form + validation + autosave. PDF in pl-report.js */
+/* Alola packing list PWA v5 — form + validation + autosave. PDF in pl-report.js */
 (function(){
 'use strict';
 const $=id=>document.getElementById(id);
@@ -12,14 +12,26 @@ let XL={};try{XL=JSON.parse(localStorage.getItem(XK))||{}}catch(e){}['v','s','c'
 let HI={};try{HI=JSON.parse(localStorage.getItem(HK))||{}}catch(e){}['customer','dest','line','driver'].forEach(k=>HI[k]=HI[k]||[]);
 const LST=k=>[...BASE[k],...XL[k].filter(x=>!BASE[k].includes(x))];
 const today=()=>new Date().toLocaleDateString('en-CA',{timeZone:'Africa/Cairo'});
-function newRef(){const d=new Date();const p=n=>String(n).padStart(2,'0');return 'PL-'+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'-'+p(d.getHours())+p(d.getMinutes())+'-'+Math.random().toString(16).slice(2,6).toUpperCase()}
+/* v5: الرقم المرجعي جواه تاريخ التحميل نفسه (مش يوم إنشاء الفورم) — PL-YYYYMMDD-HHMM-XXXX */
+function newRef(date){const d=new Date();const p=n=>String(n).padStart(2,'0');const day=/^\d{4}-\d{2}-\d{2}$/.test(String(date||''))?String(date).replace(/-/g,''):today().replace(/-/g,'');return 'PL-'+day+'-'+p(d.getHours())+p(d.getMinutes())+'-'+Math.random().toString(16).slice(2,6).toUpperCase()}
+const refDay=r=>{const m=String(r||'').match(/^PL-(\d{8})-/);return m?m[1]:''};
+const normNo=s=>AD(s).toUpperCase().replace(/[\s\/\\\-_.|]+/g,'');
+/* اسم العميل: نفس الاسم حتى لو اختلفت الهمزة أو ة/ه أو ى/ي أو التطويل أو المسافات أو «مؤسسة / شركة» */
+const nameKey=s=>AD(s).replace(/[\u0640\u064B-\u065F\u0670]/g,'').replace(/[أإآٱ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/ؤ/g,'و').replace(/ئ/g,'ي').replace(/^\s*(مؤسس[هة]|موسس[هة]|شرك[هة]|مكتب|السيد|الساده|السادة)\s+/,'').replace(/[\s.\-_,،]+/g,'').toLowerCase();
+const sigOf=h=>[normNo(h.cont),h.date||'',nameKey(h.customer)].join('|');
 const blank=()=>({p:'',v:'',s:'',c:'',b:'العلا',n:''});
 let S;try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
-if(!S||!S.h||!Array.isArray(S.rows))S={h:{ref:newRef(),date:today(),kind:'براد'},rows:[blank()]};
+if(!S||!S.h||!Array.isArray(S.rows))S={h:{ref:newRef(today()),date:today(),kind:'براد'},rows:[blank()]};
+/* لو الرقم المرجعي تاريخه مش تاريخ التحميل → رقم جديد بتاريخ التحميل (القديم بيتشال من الشاشة بس، الـ PDF اللي طلع قبل كده زي ما هو) */
+function syncRef(){if(!S.h.date)return false;if(refDay(S.h.ref)===S.h.date.replace(/-/g,''))return false;S.h.ref=newRef(S.h.date);delete S.h.sig;return true}
+/* فورم اتطبع يوم قديم واتفتح النهارده لعربية جديدة: التاريخ يبقى النهارده ورقم مرجعي جديد */
+let _reuse=false;if(S.h.issued&&String(S.h.issued).slice(0,10)<today()&&S.h.date&&S.h.date<today()){S.h.date=today();_reuse=true}
+const _fixed=syncRef();
 const HF=['ref','date','kind','cont','reefer','lot','customer','dest','line','driver','freight','adv'];
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
 function toast(t){const el=$('toast');el.textContent=t;el.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>el.style.display='none',2600)}
-function initHeader(){HF.forEach(k=>{const el=$('h_'+k);if(!el)return;el.value=S.h[k]??'';el.oninput=el.onchange=()=>{S.h[k]=k==='cont'?el.value.toUpperCase():el.value;if(k==='cont'&&el.value!==S.h[k]){const p=el.selectionStart;el.value=S.h[k];el.setSelectionRange(p,p)}rest();save();upd()}});
+function initHeader(){HF.forEach(k=>{const el=$('h_'+k);if(!el)return;el.value=S.h[k]??'';el.oninput=el.onchange=()=>{S.h[k]=k==='cont'?el.value.toUpperCase():el.value;if(k==='cont'&&el.value!==S.h[k]){const p=el.selectionStart;el.value=S.h[k];el.setSelectionRange(p,p)}if(k==='date'&&syncRef()){$('h_ref').value=S.h.ref;toast('اتغير التاريخ ← رقم مرجعي جديد: '+S.h.ref)}rest();save();upd()}});
+ const ce=$('h_customer');if(ce)ce.onblur=()=>{const v=(S.h.customer||'').trim();if(!v)return;const k=nameKey(v);const hit=HI.customer.find(x=>x!==v&&nameKey(x)===k);if(hit){S.h.customer=hit;ce.value=hit;save();toast('العميل ده متسجل باسم «'+hit+'» — اتكتب بنفس الاسم')}};
  ['customer','dest','line','driver'].forEach(k=>{$('dl_'+k).innerHTML=HI[k].map(x=>`<option value="${esc(x)}">`).join('')});rest()}
 function rest(){const f=parseFloat(AD(S.h.freight))||0,a=parseFloat(AD(S.h.adv))||0;$('h_rest').value=f?nf(f-a,2):''}
 const opts=(k,v)=>{const L=LST(k);let o=`<option value="">— ${NAMES[k]} —</option>`+L.map(x=>`<option${x===v?' selected':''}>${esc(x)}</option>`).join('');if(v&&!L.includes(v))o+=`<option selected>${esc(v)}</option>`;return o+'<option value="__new">+ إضافة جديد…</option>'};
@@ -52,14 +64,20 @@ function upd(){const{errs,used}=check();
  $('alerts').innerHTML=errs.length?errs.map(x=>`<div class="a-bad">⚠ ${esc(x)}</div>`).join(''):'<div class="a-ok">✔ البيانات كاملة — جاهز لحفظ الـ PDF</div>'}
 function data(){return{h:{...S.h,cont:(S.h.cont||'').trim(),freight:AD(S.h.freight),adv:AD(S.h.adv)},rows:check().used.map(r=>({p:AD(r.p),P:palId(r),v:r.v,s:r.s,c:r.c,b:r.b,n:AD(r.n)}))}}
 function ready(){const{errs}=check();if(errs.length){alert('مينفعش نطلع الـ PDF قبل تصليح:\n\n• '+errs.join('\n• '));return false}return true}
-function remember(){['customer','dest','line','driver'].forEach(k=>{const v=(S.h[k]||'').trim();if(v&&!HI[k].includes(v)){HI[k].unshift(v);HI[k]=HI[k].slice(0,30)}});localStorage.setItem(HK,JSON.stringify(HI))}
-async function makePdf(){if(!ready())return null;$('busy').style.display='flex';try{const d=data();const r=await PL.pdf(d);remember();initHeader();return{blob:r.blob,name:PL.fileName(d.h)}}catch(e){alert('حصل خطأ أثناء تجهيز الـ PDF: '+e.message);return null}finally{$('busy').style.display='none'}}
+function remember(){['customer','dest','line','driver'].forEach(k=>{const v=(S.h[k]||'').trim();if(v&&!HI[k].some(x=>x===v||(k==='customer'&&nameKey(x)===nameKey(v)))){HI[k].unshift(v);HI[k]=HI[k].slice(0,30)}});localStorage.setItem(HK,JSON.stringify(HI))}
+/* قبل الـ PDF: الرقم المرجعي لازم يكون بتاريخ التحميل، ولو نفس الفورم اتطبع قبل كده لعربية تانية → رقم جديد */
+function refCheck(){if(syncRef())toast('الرقم المرجعي اتظبط على تاريخ التحميل: '+S.h.ref);const sg=sigOf(S.h);
+ if(S.h.sig&&S.h.sig!==sg){if(confirm('الباكينج ليست ده اتطبع قبل كده برقم '+S.h.ref+' لعربية/عميل تاني.\n\nموافق = دي عربية جديدة (رقم مرجعي جديد)\nإلغاء = ده تصحيح لنفس العربية (نفس الرقم)'))S.h.ref=newRef(S.h.date)}
+ if(!(S.h.customer||'').trim()&&!confirm('اسم العميل فاضي. تكمّل من غير عميل؟'))return false;return true}
+async function makePdf(){if(!ready())return null;if(!refCheck()){initHeader();return null}save();$('busy').style.display='flex';try{const d=data();const r=await PL.pdf(d);S.h.sig=sigOf(S.h);S.h.issued=new Date().toISOString();save();remember();initHeader();return{blob:r.blob,name:PL.fileName(d.h)}}catch(e){alert('حصل خطأ أثناء تجهيز الـ PDF: '+e.message);return null}finally{$('busy').style.display='none'}}
 function download(f){const u=URL.createObjectURL(f.blob);const a=document.createElement('a');a.href=u;a.download=f.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000);toast('✔ اتحفظ: '+f.name)}
 $('bPdf').onclick=$('pvPdf').onclick=async()=>{const f=await makePdf();if(f)download(f)};
 $('bShare').onclick=async()=>{const f=await makePdf();if(!f)return;const file=new File([f.blob],f.name,{type:'application/pdf'});if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:f.name})}catch(e){}}else download(f)};
 $('bPrev').onclick=async()=>{$('busy').style.display='flex';try{const w=$('pvw');const fit=await PL.preview(data(),w);const sc=Math.min(1,(window.innerWidth-24)/794);w.style.transform=`scale(${sc})`;w.style.height=(1123*sc)+'px';$('pv').style.display='block';if(fit.scale<1||fit.k<1)toast('تم تصغير الخط تلقائياً عشان الباكينج يطلع في صفحة واحدة')}finally{$('busy').style.display='none'}};
 $('pvClose').onclick=()=>{$('pv').style.display='none'};
-$('bNew').onclick=()=>{if(!confirm('بدء باكينج ليست جديد؟ البيانات الحالية هتتمسح من الشاشة (احفظ الـ PDF الأول).'))return;S={h:{ref:newRef(),date:today(),kind:S.h.kind||'براد'},rows:[blank()]};save();initHeader();renderRows()};
+$('bNew').onclick=()=>{if(!confirm('بدء باكينج ليست جديد؟ البيانات الحالية هتتمسح من الشاشة (احفظ الـ PDF الأول).'))return;S={h:{ref:newRef(today()),date:today(),kind:S.h.kind||'براد'},rows:[blank()]};save();initHeader();renderRows()};
 window.APP={S,data,check,render:()=>{initHeader();renderRows()},set(x){S.h=x.h;S.rows=x.rows;save();initHeader();renderRows()}};
-initHeader();renderRows();
+initHeader();renderRows();save();
+if(_reuse)setTimeout(()=>toast('الفورم ده اتطبع يوم قديم ← التاريخ بقى النهارده ورقم مرجعي جديد '+S.h.ref),300);else if(_fixed)setTimeout(()=>toast('الرقم المرجعي اتظبط على تاريخ التحميل: '+S.h.ref),300);
+window.APP.syncRef=syncRef;window.APP.nameKey=nameKey;window.APP.newRef=newRef;
 })();
