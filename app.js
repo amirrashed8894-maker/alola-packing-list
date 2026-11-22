@@ -5,7 +5,7 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const AD=s=>String(s??'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
 const nf=(x,d=0)=>Number(Math.round((Number(x)||0)*10**d)/10**d).toLocaleString('en-US',{maximumFractionDigits:d});
-const BASE={v:['أبو سرة','صيفي','موركيت كيني','موركيت إسباني','ليمون'],s:['20','28','32','36','40','42','48','56','64','72','80','88','100','113'],c:['أوبن توب 7 ك','مقفول صغير 7 ك','مقفول 14 ك','مقفول 15 ك'],b:['العلا','الحسن','كوكلو']};
+const BASE={v:['أبو سرة','صيفي','موركيت كيني','موركيت إسباني','ليمون'],s:['20','24','28','32','36','40','42','48','56','64','72','80','88','100','113'],c:['أوبن توب 7 ك','مقفول صغير 7 ك','مقفول 14 ك','مقفول 15 ك'],b:['العلا','الحسن','كوكلو']};
 const NAMES={v:'الصنف',s:'المقاس',c:'نوع الكرتون',b:'اسم الكرتون'};
 const KEY='alola_packing_v1',XK='alola_packing_extra',HK='alola_packing_hist';
 let XL={};try{XL=JSON.parse(localStorage.getItem(XK))||{}}catch(e){}['v','s','c','b'].forEach(k=>XL[k]=XL[k]||[]);
