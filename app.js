@@ -28,7 +28,9 @@ function syncRef(){if(!S.h.date)return false;if(refDay(S.h.ref)===S.h.date.repla
 let _reuse=false;if(S.h.issued&&String(S.h.issued).slice(0,10)<today()&&S.h.date&&S.h.date<today()){S.h.date=today();_reuse=true}
 const _fixed=syncRef();
 const HF=['ref','date','kind','cont','reefer','lot','customer','dest','line','driver','freight','adv'];
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const save=()=>{S._ts=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+/* v8: البرنامج مفتوح في تابتين على نفس الموبايل — التاب القديمة بتاخد آخر حفظ من التاب التانية بدل ما تمسحه */
+window.addEventListener('storage',e=>{if(e.key!==KEY||!e.newValue)return;let x;try{x=JSON.parse(e.newValue)}catch(_){return}if(!x||!x.h||!Array.isArray(x.rows)||(x._ts||0)<=(S._ts||0))return;S.h=x.h;S.rows=x.rows.length?x.rows:[blank()];S._ts=x._ts;try{initHeader();renderRows()}catch(_){}});
 function toast(t){const el=$('toast');el.textContent=t;el.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>el.style.display='none',2600)}
 function initHeader(){HF.forEach(k=>{const el=$('h_'+k);if(!el)return;el.value=S.h[k]??'';el.oninput=el.onchange=()=>{S.h[k]=k==='cont'?el.value.toUpperCase():el.value;if(k==='cont'&&el.value!==S.h[k]){const p=el.selectionStart;el.value=S.h[k];el.setSelectionRange(p,p)}if(k==='date'&&syncRef()){$('h_ref').value=S.h.ref;toast('اتغير التاريخ ← رقم مرجعي جديد: '+S.h.ref)}rest();save();upd()}});
  const ce=$('h_customer');if(ce)ce.onblur=()=>{const v=(S.h.customer||'').trim();if(!v)return;const k=nameKey(v);const hit=HI.customer.find(x=>x!==v&&nameKey(x)===k);if(hit){S.h.customer=hit;ce.value=hit;save();toast('العميل ده متسجل باسم «'+hit+'» — اتكتب بنفس الاسم')}};
