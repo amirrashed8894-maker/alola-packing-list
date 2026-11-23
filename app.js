@@ -101,7 +101,8 @@ function addNum(d,quiet){d=AD(String(d||'')).replace(/\D/g,'');if(!d)return fals
  if(cur.sel.some(x=>pkey(x)===k)){if(!quiet){const o=cur.sel.find(x=>pkey(x)===k);cur.msg=o===d?'P'+d+' مضاف قبل كده في القايمة دي':'P'+d+' هو نفس P'+o+' — مضاف قبل كده';}return false}
  if(inList(d)){cur.msg='⚠ P'+d+' موجود قبل كده في الباكينج ليست — مش هيتضاف مرتين';return false}
  cur.sel.push(d);return true}
-function addNext(n){const last=cur.sel.length?cur.sel[cur.sel.length-1]:null;if(!last){cur.msg='اكتب أول رقم الأول ودوس «إضافة»';return}const w=last.length;let x=parseInt(last,10),c=0,g=0;while(c<n&&g<500){x++;g++;if(addNum(String(x).padStart(w,'0'),true))c++}}
+function skipMsg(sk){if(!sk.length)return;cur.msg='اتشال '+sk.length+' رقم موجود قبل كده في الباكينج ليست أو في القايمة دي: '+rangesOf(sk)}
+function addNext(n){const last=cur.sel.length?cur.sel[cur.sel.length-1]:null;if(!last){cur.msg='اكتب أول رقم الأول ودوس «إضافة»';return}const w=last.length;let x=parseInt(last,10),c=0,g=0;const sk=[];while(c<n&&g<500){x++;g++;const d=String(x).padStart(w,'0');if(addNum(d,true))c++;else sk.push(d)}cur.msg='';skipMsg(sk)}
 function drawNums(el){const W=cur.spec;const k=cur.sel.length;const short=cur.sel.filter(d=>d.length<4);
  el.innerHTML=`<div class="h"><button type="button" data-pp="x">✕ إلغاء</button><b>أرقام الباليتات</b></div>${steps('nums')}
  <div class="sum"><div class="t">${specText(W)}</div><button type="button" data-pp="tospec">تعديل</button></div>
@@ -119,19 +120,21 @@ function draw(){const el=$('pp');if(!el||!cur)return;const sc0=el.querySelector(
 function openNew(){const R=recent();cur={step:'spec',spec:R[0]?JSON.parse(JSON.stringify(R[0])):{v:'',s:'',c:'',b:'',n:'',mix:[]},edit:null,sel:[]};mount();draw()}
 function startNums(W){cur={step:'nums',spec:W,edit:null,sel:[],focus:true};mount();draw()}
 function openAdd(gi){const g=GR[gi];if(!g)return;const W=specOf(S.rows[g.rows[g.rows.length-1]]);startNums(W)}
-function openEdit(gi){const g=GR[gi];if(!g)return;const W=specOf(g.r);const ns=new Set(g.rows.map(i=>String(S.rows[i].n||'')));if(ns.size!==1)W.n='';cur={step:'spec',spec:W,edit:g.rows.slice(),sel:[],nT:false};mount();draw()}
+function openEdit(gi){const g=GR[gi];if(!g)return;const W=specOf(g.r);const ns=new Set(g.rows.map(i=>String(S.rows[i].n||'')));if(ns.size!==1)W.n='';cur={step:'spec',spec:W,edit:g.rows.slice(),ek:g.rows.map(i=>({i,p:S.rows[i].p,g:gKey(S.rows[i])})),sel:[],nT:false};mount();draw()}
 function setField(f,v){const W=cur.spec;W[f]=v;if(f==='s'&&v==='MIX'){W.mix=W.mix||[];W.n=String(mixSum(W)||'')}if(f==='s'&&v!=='MIX')W.mix=[]}
 function nextNeed(){const W=cur.spec;const k=['v','c','s','b'].find(k=>!String(W[k]||'').trim());if(k)return $('g_'+k);if(W.s==='MIX'&&!mixOk(W))return $('g_mix');if(!keepN()&&W.s!=='MIX'&&!nOk(W.n))return $('g_n');return null}
 function flashRows(a,b){for(let j=a;j<=b;j++){const x=document.querySelector(`[data-row="${j}"]`);if(x)x.classList.add('flash')}const f=document.querySelector(`[data-row="${a}"]`);if(f){const g=f.closest('.grpc');(g||f).scrollIntoView({block:'start'})}}
-function create(){const W=cur.spec;const nums=cur.sel.slice();if(!nums.length)return;const before=JSON.stringify(S.rows);const key=gKey(W);const mix=W.s==='MIX';
+function create(){const W=cur.spec;const nums=cur.sel.slice();if(!nums.length)return;const key=gKey(W);const mix=W.s==='MIX';
  const mk=d=>{const o={p:d,v:W.v,s:W.s,c:W.c,b:W.b,n:String(mix?mixSum(W):AD(W.n).trim())};if(mix)o.mix=mixLines(W).map(x=>({s:x.s,n:String(x.n)}));return o};
  S.rows=S.rows.filter(filled);let at=-1;S.rows.forEach((r,i)=>{if(gKey(r)===key)at=i});if(at<0)at=S.rows.length-1;
- S.rows.splice(at+1,0,...nums.map(mk));rememberSpec(W);closeS();save();renderRows();flashRows(at+1,at+nums.length);undoToast(nums,before)}
-function applyEdit(){const W=cur.spec;const mix=W.s==='MIX';const n=cur.edit.length;cur.edit.forEach(i=>{const r=S.rows[i];if(!r)return;r.v=W.v;r.s=W.s;r.c=W.c;r.b=W.b;if(mix){r.mix=mixLines(W).map(x=>({s:x.s,n:String(x.n)}));r.n=String(mixSum(W))}else{delete r.mix;if(cur.nT||!keepN())r.n=String(AD(W.n).trim())}});
+ const made=nums.map(mk);S.rows.splice(at+1,0,...made);rememberSpec(W);closeS();save();renderRows();flashRows(at+1,at+nums.length);undoToast(nums,made)}
+/* the rows are found again by number + old spec at save time (the other tab may have saved meanwhile and moved them) */
+function editRows(){const out=[];(cur.ek||[]).forEach(k=>{let j=-1;if(S.rows[k.i]&&S.rows[k.i].p===k.p&&gKey(S.rows[k.i])===k.g)j=k.i;else if(k.p)j=S.rows.findIndex((r,x)=>!out.includes(x)&&r.p===k.p&&gKey(r)===k.g);if(j>=0&&!out.includes(j))out.push(j)});return out}
+function applyEdit(){const W=cur.spec;const mix=W.s==='MIX';const idx=editRows();const n=idx.length;idx.forEach(i=>{const r=S.rows[i];if(!r)return;r.v=W.v;r.s=W.s;r.c=W.c;r.b=W.b;if(mix){r.mix=mixLines(W).map(x=>({s:x.s,n:String(x.n)}));r.n=String(mixSum(W))}else{delete r.mix;if(cur.nT||!keepN())r.n=String(AD(W.n).trim())}});
  if(specOk(W))rememberSpec(W);closeS();save();renderRows();toast('✓ اتعدلت المواصفة لـ '+n+' باليت')}
-function undoToast(made,before){let el=$('pundo');if(!el){el=document.createElement('div');el.id='pundo';document.body.appendChild(el)}
+function undoToast(made,objs){let el=$('pundo');if(!el){el=document.createElement('div');el.id='pundo';document.body.appendChild(el)}
  el.innerHTML=`<span style="flex:1">✓ اتضاف ${made.length} باليت: ${esc(rangesOf(made))}</span><button type="button">تراجع</button>`;el.style.display='flex';
- el.querySelector('button').onclick=()=>{S.rows=JSON.parse(before);if(!S.rows.length)S.rows.push(blank());el.style.display='none';save();renderRows();toast('اتلغى')};
+ el.querySelector('button').onclick=()=>{/* only the pallets just added are removed (by number + spec), so a count edited meanwhile stays; works even after the other tab saved */const keys=new Set(objs.map(o=>pkey(o.p)+'|'+gKey(o)));let n=0;S.rows=S.rows.filter(r=>{if(keys.has(pkey(r.p)+'|'+gKey(r))){n++;return false}return true});if(!S.rows.length)S.rows.push(blank());el.style.display='none';save();renderRows();toast('اتلغى — اتشال '+n+' باليت')};
  clearTimeout(undoToast.t);undoToast.t=setTimeout(()=>{el.style.display='none'},15000)}
 document.addEventListener('input',e=>{if(!cur||cur.step!=='spec')return;const t=e.target;const W=cur.spec;
  if(t.id==='ppnn'){W.n=t.value;cur.nT=true}else if(t.dataset.mixn!==undefined){const m=W.mix[+t.dataset.mixn];if(m)m.n=t.value;W.n=String(mixSum(W)||'');const nn=$('ppnn');if(nn)nn.value=W.n;const ms=$('ppms');if(ms)ms.textContent='المجموع: '+mixSum(W)+' كرتونة'}else return;
@@ -157,7 +160,7 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-pp],[data-
  if(a==='tospec'){cur.step='spec';cur.confirm=false;draw();return}
  if(a==='add'){const i=$('ppn');if(i&&i.value){addNum(i.value)}cur.focus=true;cur.keep=true;draw();return}
  if(a==='range'){cur.range=!cur.range;cur.focus=true;draw();return}
- if(a==='addr'){const A=AD(($('ppa')||{}).value||'').replace(/\D/g,''),B=AD(($('ppb')||{}).value||'').replace(/\D/g,'');if(!A||!B){cur.msg='اكتب أول رقم وآخر رقم';draw();return}const x=parseInt(A,10),y=parseInt(B,10);if(y<x||y-x>299){cur.msg='المدى غلط (لحد 300 باليت مرة واحدة)';draw();return}const w=A.length;for(let n=x;n<=y;n++)addNum(String(n).padStart(w,'0'),true);cur.range=false;cur.keep=true;draw();return}
+ if(a==='addr'){const A=AD(($('ppa')||{}).value||'').replace(/\D/g,''),B=AD(($('ppb')||{}).value||'').replace(/\D/g,'');if(!A||!B){cur.msg='اكتب أول رقم وآخر رقم';draw();return}const x=parseInt(A,10),y=parseInt(B,10);if(y<x||y-x>299){cur.msg='المدى غلط (لحد 300 باليت مرة واحدة)';draw();return}const w=A.length;const sk=[];for(let n=x;n<=y;n++){const d=String(n).padStart(w,'0');if(!addNum(d,true))sk.push(d)}cur.msg='';skipMsg(sk);cur.range=false;cur.keep=true;draw();return}
  if(a==='clr'){cur.sel=[];draw();return}
  if(a==='review'){if(cur.sel.length){cur.confirm=true;cur.keep=true;draw()}return}
  if(a==='noconf'){cur.confirm=false;cur.keep=true;draw();return}
@@ -170,7 +173,7 @@ $('rows').addEventListener('click',ev=>{const t=ev.target;if(t.dataset.rm!=null)
 });
 function focusP(i){const el=document.querySelector(`input[data-i="${i}"][data-k="p"]`);if(el){el.focus();el.scrollIntoView({block:'center'})}}
 function check(){const used=S.rows.filter(r=>r.p||r.v||r.s||r.n);const cnt={};used.forEach(r=>{const p=palKey(r);if(p)cnt[p]=(cnt[p]||0)+1});const errs=[];let bad=0;
- S.rows.forEach((r,i)=>{const o={};const any=r.p||r.v||r.s||r.n;if(any){if(!r.p)o.p='miss';else if(!validP(r))o.p='err';else if(cnt[palKey(r)]>1)o.p='dup';else if(AD(r.p).length<4)o.short=1;['v','s','c','b'].forEach(k=>{if(!r[k])o[k]='miss'});if(r.s==='MIX'&&(!mixOk(r)||parseInt(AD(r.n),10)!==mixSum(r)))o.s='err';if(!(parseInt(AD(r.n),10)>0)||!/^\d+$/.test(AD(r.n)))o.n=r.n?'err':'miss'}r._st=o;if(Object.keys(o).filter(k=>k!=='short').length)bad++});
+ S.rows.forEach((r,i)=>{const o={};const any=r.p||r.v||r.s||r.n;if(any){if(!r.p)o.p='miss';else if(!validP(r))o.p='err';else if(cnt[palKey(r)]>1)o.p='dup';else if(AD(r.p).length<4)o.short=1;['v','s','c','b'].forEach(k=>{if(!r[k])o[k]='miss'});/* MIX made in the new entry carries its breakdown (r.mix) and must add up; a plain «MIX» typed as a custom size in v16 stays valid as before */if(r.s==='MIX'&&Array.isArray(r.mix)&&(!mixOk(r)||parseInt(AD(r.n),10)!==mixSum(r)))o.s='err';if(!(parseInt(AD(r.n),10)>0)||!/^\d+$/.test(AD(r.n)))o.n=r.n?'err':'miss'}r._st=o;if(Object.keys(o).filter(k=>k!=='short').length)bad++});
  if(!S.h.cont)errs.push('رقم الحاوية / البراد ناقص');if(!S.h.date)errs.push('تاريخ التحميل ناقص');
  const dups=Object.keys(cnt).filter(p=>cnt[p]>1);if(dups.length)errs.push('أرقام باليتات مكررة: '+dups.join('، '));const sh=S.rows.filter(r=>r._st&&r._st.short).length;
  if(bad)errs.push(bad+' باليت بياناتهم ناقصة أو غلط (باللون الأحمر/الأصفر)');if(!used.length)errs.push('مفيش باليتات');return{errs,used}}

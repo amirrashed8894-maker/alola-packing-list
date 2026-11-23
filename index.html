@@ -76,7 +76,7 @@ table.sum th{background:var(--g);color:#fff}table.sum tr.sub td{background:#eaf5
 #pp .mixl{display:flex;align-items:center;gap:8px;margin-top:6px}#pp .mixl b{min-width:60px;text-align:center;background:var(--g);color:#fff;border-radius:10px;padding:10px 4px}#pp .mixl input{flex:1;min-height:48px;font-size:18px;text-align:center}
 #pp .sum{background:#fff;margin:8px 12px 0;border-radius:12px;padding:7px 10px;font-size:13px;line-height:1.7;box-shadow:0 1px 3px #0002;display:flex;gap:8px;align-items:flex-start}
 #pp .sum .t{flex:1}#pp .sum span{display:inline-block;background:#e8efe8;color:var(--g);border-radius:8px;padding:0 7px;margin:1px 0 1px 4px;font-weight:600}
-#pp .sum button{min-height:34px;padding:2px 10px;font-size:13px;background:#fff;border:1.5px solid var(--g2);color:var(--g)}
+#pp .sum button{min-height:40px;padding:2px 10px;font-size:13px;background:#fff;border:1.5px solid var(--g2);color:var(--g)}
 #pp .nav{display:flex;align-items:center;gap:6px;margin:8px 12px 0}
 #pp .nav .rg{flex:1;text-align:center;font-weight:700;direction:ltr;font-size:15px}#pp .nav .rg small{display:block;font-weight:400;color:#666;font-size:12px;direction:rtl}
 #pp .nav button{min-height:42px;padding:4px 12px;background:#e8efe8;color:var(--g)}#pp .nav button:disabled{opacity:.35}
@@ -90,7 +90,7 @@ table.sum th{background:var(--g);color:#fff}table.sum tr.sub td{background:#eaf5
 #pp .none{grid-column:1/-1;text-align:center;color:#666;padding:20px;font-size:14px}
 #pp .ft{background:#fff;box-shadow:0 -2px 8px #0002;padding:8px 12px;padding-bottom:max(8px,env(safe-area-inset-bottom))}
 #pp .cnt{display:flex;align-items:center;gap:8px;margin-bottom:6px}#pp .cnt b{font-size:22px;color:var(--g);min-width:34px;text-align:center}#pp .cnt .rgs{flex:1;font-size:13px;color:#444;direction:ltr;text-align:right;max-height:36px;overflow:hidden}
-#pp .cnt button{min-height:34px;padding:2px 10px;font-size:13px;background:#fdecea;color:var(--bad)}
+#pp .cnt button{min-height:40px;padding:2px 10px;font-size:13px;background:#fdecea;color:var(--bad)}
 #pp .sync{font-size:11.5px;color:#666;margin-bottom:6px}#pp .sync.off{color:#b45309}
 #pp .ft .go{width:100%;min-height:54px;font-size:17px;font-weight:700}#pp .ft .go:disabled{background:#9db59f}
 #pp .mk{background:none;color:#666;font-size:12px;min-height:30px;padding:2px;text-decoration:underline;width:100%}
@@ -118,6 +118,8 @@ table.sum th{background:var(--g);color:#fff}table.sum tr.sub td{background:#eaf5
 .pr .top{margin:0}.pcn{width:92px;display:flex;flex-direction:column;align-items:center}.pcn input{text-align:center;font-weight:700;padding:6px}.pcn small{font-size:11px;color:#777}
 .pcn input::-webkit-inner-spin-button,.pcn input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}.pcn input{-moz-appearance:textfield}.gh small.mx{color:var(--g);font-weight:700}
 .rmb{min-height:40px;font-size:13px;padding:4px 10px}
+.pr .pin{min-width:104px}.pr .pin input{min-width:0;padding:8px 4px}
+@media(max-width:360px){.grpc .row.pr{padding:8px 6px}.pr .top{gap:5px}.pcn{width:70px}.rmb{padding:4px 8px}.pr .pin span{padding:0 7px}.pr .pin input{letter-spacing:0}}
 .gf{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px 10px}.gf.one{grid-template-columns:1fr}.gf button{min-height:44px;font-size:14px;font-weight:700}
 #pundo{position:fixed;left:10px;right:10px;bottom:calc(76px + env(safe-area-inset-bottom));background:#0f172a;color:#fff;padding:10px 12px;border-radius:12px;font-size:14px;z-index:250;display:none;align-items:center;gap:10px}
 #pundo button{min-height:40px;padding:4px 16px;background:#fff;color:#0f172a;font-weight:700}
@@ -155,7 +157,7 @@ table.sum th{background:var(--g);color:#fff}table.sum tr.sub td{background:#eaf5
 <datalist id="dl_customer"></datalist><datalist id="dl_dest"></datalist><datalist id="dl_line"></datalist><datalist id="dl_driver"></datalist>
 <div id="pv"><div class="tb"><button class="btn" id="pvPdf" type="button">PDF / واتساب</button><button class="btn2" id="pvClose" type="button">إغلاق</button></div><div class="wrap" id="pvw"></div></div>
 <div id="busy">جاري تجهيز الـ PDF…</div><div id="toast"></div>
-<script src="html2canvas.min.js"></script><script src="jspdf.umd.min.js"></script><script src="pl-report.js?v=4"></script><script src="pdf-share.js?v=1"></script><script src="app.js?v=9"></script>
+<script src="html2canvas.min.js"></script><script src="jspdf.umd.min.js"></script><script src="pl-report.js?v=5"></script><script src="pdf-share.js?v=1"></script><script src="app.js?v=9"></script>
 <script>if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;let done=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!done){done=true;location.reload()}});
 navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{r.update();document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')r.update()})}).catch(()=>{})}</script>
 </body>
