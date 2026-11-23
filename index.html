@@ -57,9 +57,75 @@ table.sum th{background:var(--g);color:#fff}table.sum tr.sub td{background:#eaf5
 #pv .wrap{width:794px;transform-origin:top right;margin-inline-start:auto}
 #pv .tb{position:sticky;top:0;display:flex;gap:8px;justify-content:center;margin-bottom:10px;z-index:2}
 #toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:#1d3b21;color:#fff;padding:8px 16px;border-radius:10px;display:none;z-index:300;font-size:14px}
+#pp{position:fixed;inset:0;z-index:300;background:#f4f6f4;display:flex;flex-direction:column}
+#pp .h{background:var(--g);color:#fff;padding:8px 12px;padding-top:max(8px,env(safe-area-inset-top));display:flex;align-items:center;gap:8px}
+#pp .h b{flex:1;font-size:17px}#pp .h button{background:#ffffff26;color:#fff;min-height:40px;padding:4px 12px;font-size:15px}
+#pp .steps{display:flex;gap:6px;padding:8px 12px 0}#pp .steps span{flex:1;text-align:center;font-size:12.5px;padding:5px 0;border-radius:20px;background:#e3e8e3;color:#667}#pp .steps span.on{background:var(--g);color:#fff;font-weight:700}#pp .steps span.done{background:#cfe3d0;color:var(--g)}
+#pp .body{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:6px 12px 14px}
+#pp .grp{background:#fff;border-radius:14px;padding:8px 10px 10px;margin-top:8px;box-shadow:0 1px 3px #0001}
+#pp .grp.need{box-shadow:0 0 0 2px var(--warn)}
+#pp .gt{font-size:13px;color:#555;margin-bottom:6px;display:flex;justify-content:space-between}#pp .gt b{color:var(--g)}
+#pp .chips{display:flex;flex-wrap:wrap;gap:7px}
+#pp .ch{min-height:46px;padding:6px 14px;border-radius:24px;background:#f1f4f1;border:1.5px solid #d6dcd6;color:#222;font-size:16px;font-weight:600}
+#pp .ch.on{background:var(--g);border-color:var(--g);color:#fff}#pp .ch.add{background:#fff;border-style:dashed;color:#666;font-weight:400}
+#pp .rec{display:flex;flex-direction:column;gap:7px}
+#pp .rc{text-align:right;background:#fff;border:1.5px solid #cfe0d0;border-radius:14px;padding:9px 12px;font-size:14.5px;line-height:1.5;color:#1d3b22;min-height:56px}
+#pp .rc b{font-size:16px}#pp .rc small{display:block;color:#666;font-size:12.5px}
+#pp .nbx{display:flex;align-items:center;gap:8px}#pp .nbx input{flex:1;text-align:center;font-size:22px;font-weight:700;min-height:54px}
+#pp .nbx button{width:56px;min-height:54px;font-size:24px;background:#e8efe8;color:var(--g);padding:0}
+#pp .mixl{display:flex;align-items:center;gap:8px;margin-top:6px}#pp .mixl b{min-width:60px;text-align:center;background:var(--g);color:#fff;border-radius:10px;padding:10px 4px}#pp .mixl input{flex:1;min-height:48px;font-size:18px;text-align:center}
+#pp .sum{background:#fff;margin:8px 12px 0;border-radius:12px;padding:7px 10px;font-size:13px;line-height:1.7;box-shadow:0 1px 3px #0002;display:flex;gap:8px;align-items:flex-start}
+#pp .sum .t{flex:1}#pp .sum span{display:inline-block;background:#e8efe8;color:var(--g);border-radius:8px;padding:0 7px;margin:1px 0 1px 4px;font-weight:600}
+#pp .sum button{min-height:40px;padding:2px 10px;font-size:13px;background:#fff;border:1.5px solid var(--g2);color:var(--g)}
+#pp .nav{display:flex;align-items:center;gap:6px;margin:8px 12px 0}
+#pp .nav .rg{flex:1;text-align:center;font-weight:700;direction:ltr;font-size:15px}#pp .nav .rg small{display:block;font-weight:400;color:#666;font-size:12px;direction:rtl}
+#pp .nav button{min-height:42px;padding:4px 12px;background:#e8efe8;color:var(--g)}#pp .nav button:disabled{opacity:.35}
+#pp .tools{display:flex;gap:6px;margin:8px 12px 0;flex-wrap:wrap}
+#pp .tools button{flex:1;min-height:46px;padding:4px 6px;background:#fff;border:1.5px solid var(--g2);color:var(--g);font-size:15px;font-weight:700}
+#pp .tools button:first-child{flex:1.7}#pp .tools button.on{background:#fff6dc;border-color:#d39e00;color:#7a5a00}
+#pp .hint2{margin:6px 12px 0;font-size:13px;color:#7a5a00;background:#fff6dc;border-radius:10px;padding:6px 10px}
+#pp .grid{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:8px 12px 12px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;align-content:start}
+#pp .c{min-height:58px;border-radius:12px;background:#fff;border:1.5px solid #d6dcd6;color:#222;font-weight:700;font-size:17px;direction:ltr;padding:0}
+#pp .c.on{background:var(--g);border-color:var(--g);color:#fff}#pp .c.anc{box-shadow:0 0 0 3px #d39e00}
+#pp .none{grid-column:1/-1;text-align:center;color:#666;padding:20px;font-size:14px}
+#pp .ft{background:#fff;box-shadow:0 -2px 8px #0002;padding:8px 12px;padding-bottom:max(8px,env(safe-area-inset-bottom))}
+#pp .cnt{display:flex;align-items:center;gap:8px;margin-bottom:6px}#pp .cnt b{font-size:22px;color:var(--g);min-width:34px;text-align:center}#pp .cnt .rgs{flex:1;font-size:13px;color:#444;direction:ltr;text-align:right;max-height:36px;overflow:hidden}
+#pp .cnt button{min-height:40px;padding:2px 10px;font-size:13px;background:#fdecea;color:var(--bad)}
+#pp .sync{font-size:11.5px;color:#666;margin-bottom:6px}#pp .sync.off{color:#b45309}
+#pp .ft .go{width:100%;min-height:54px;font-size:17px;font-weight:700}#pp .ft .go:disabled{background:#9db59f}
+#pp .mk{background:none;color:#666;font-size:12px;min-height:30px;padding:2px;text-decoration:underline;width:100%}
+#pp .cf{position:absolute;inset:0;background:#0007;display:flex;align-items:flex-end}
+#pp .cfb{background:#fff;width:100%;border-radius:18px 18px 0 0;padding:16px 14px;padding-bottom:max(14px,env(safe-area-inset-bottom))}
+#pp .cfb h3{margin:0 0 8px;font-size:20px;color:var(--g)}#pp .cfb .big{font-size:15px;line-height:1.8}#pp .cfb .big span{display:inline-block;background:#e8efe8;color:var(--g);border-radius:8px;padding:0 8px;margin:2px 0 2px 4px;font-weight:600}
+#pp .cfb .nums{direction:ltr;text-align:right;font-weight:700;font-size:17px;margin:8px 0 12px;color:#111}
+#pp .cfb .row2{display:grid;grid-template-columns:1fr 2fr;gap:8px}#pp .cfb .row2 button{min-height:56px;font-size:17px;font-weight:700}
+.pkb_unused{width:100%;margin-top:8px;background:#e8efe8;color:var(--g);font-weight:700}.pkb:disabled{background:#f1f1f1;color:#9a9a9a;font-weight:400;font-size:14px}
+.prm_unused{background:#fdecea;color:var(--bad);min-height:34px;padding:4px 10px;font-size:13px}
+.pbar{display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:10px}.pbar.two{grid-template-columns:3fr 2fr}.pbar button{min-height:56px;font-size:16px;font-weight:700}
+.pbar .pl{background:#fff;border:2px solid var(--g);color:var(--g);font-size:14px;line-height:1.3}
+@keyframes ppf{0%{box-shadow:0 0 0 3px #4a7c50}100%{box-shadow:none}}.row.flash{animation:ppf 1.6s ease-out}
+#pp .ent{display:flex;gap:8px;margin:8px 12px 0}#pp .ent .pin{flex:1}#pp .ent input{font-size:22px;min-height:54px}#pp .ent .btn{min-height:54px;font-size:17px;font-weight:700;padding:4px 18px}
+#pp .rng{display:grid;grid-template-columns:1fr 1fr auto;gap:6px;margin:8px 12px 0}#pp .rng input{min-height:48px;font-size:18px}#pp .rng .btn2{min-height:48px;font-weight:700}
+#pp .grid{grid-template-columns:repeat(3,1fr)}#pp .c small{opacity:.75;font-size:12px}#pp .c.sh{background:#fff4d6;border-color:#e0a100;color:#7a5a00}
+#pp .pin span{border-color:#ccc}
+.grpc{border:1.5px solid #d6e3d7;border-radius:14px;margin-bottom:12px;overflow:hidden;background:#fbfdfb}
+.grpc.inc{border-color:#e0a100}
+.gh{display:flex;gap:8px;align-items:center;background:#e8efe8;padding:8px 10px}.gh .gt2{flex:1;min-width:0}.gh b{display:block;color:var(--g);font-size:16px}.gh small{display:block;color:#555;font-size:12.5px}
+.gc{font-size:13px;text-align:left;line-height:1.35;color:var(--g);font-weight:700;white-space:nowrap}
+.gh.inc{background:#fff4d6}.gh.inc b{color:#8a5a00}
+.grpc .row.pr{border:0;border-bottom:1px solid #eef2ee;border-radius:0;margin:0;padding:8px 10px;background:transparent}
+.grpc .row.pr.dup{background:#fdecea}
+.pr .top{margin:0}.pcn{width:92px;display:flex;flex-direction:column;align-items:center}.pcn input{text-align:center;font-weight:700;padding:6px}.pcn small{font-size:11px;color:#777}
+.pcn input::-webkit-inner-spin-button,.pcn input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}.pcn input{-moz-appearance:textfield}.gh small.mx{color:var(--g);font-weight:700}
+.rmb{min-height:40px;font-size:13px;padding:4px 10px}
+.pr .pin{min-width:104px}.pr .pin input{min-width:0;padding:8px 4px}
+@media(max-width:360px){.grpc .row.pr{padding:8px 6px}.pr .top{gap:5px}.pcn{width:70px}.rmb{padding:4px 8px}.pr .pin span{padding:0 7px}.pr .pin input{letter-spacing:0}}
+.gf{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px 10px}.gf.one{grid-template-columns:1fr}.gf button{min-height:44px;font-size:14px;font-weight:700}
+#pundo{position:fixed;left:10px;right:10px;bottom:calc(76px + env(safe-area-inset-bottom));background:#0f172a;color:#fff;padding:10px 12px;border-radius:12px;font-size:14px;z-index:250;display:none;align-items:center;gap:10px}
+#pundo button{min-height:40px;padding:4px 16px;background:#fff;color:#0f172a;font-weight:700}
 </style>
 <link rel="icon" href="icon-192.png"></head>
-<body>
+<body><style>#fullWarn{display:none;position:sticky;top:0;z-index:50;background:#b3261e;color:#fff;padding:10px 12px 10px 92px;font-weight:700;font-size:15px;line-height:1.5}.row.short .msg{color:#8a5a00;background:#fff4d6;border-radius:8px;padding:4px 8px}.row.short input[data-k="p"]{border-color:#e0a100;background:#fffaf0}</style><div id="fullWarn">⚠ مساحة التخزين على الموبايل مليانة — آخر تعديلات مش بتتحفظ. اعمل الـ PDF وابعته دلوقتي، وبعدين امسح ملفات/صور من الموبايل.</div>
 <script>window.ALOLA_AUTH_APP='packing';</script>
 <script src="auth-gate.js?v=90"></script>
 <header class="bar"><div class="t"><img src="alola_logo_green.png" alt=""><h1>باكينج ليست<small>شركة العلا لفرز الحاصلات الزراعية</small></h1></div><div class="stat" id="stat"></div></header>
@@ -81,18 +147,17 @@ table.sum th{background:var(--g);color:#fff}table.sum tr.sub td{background:#eaf5
    <div><label>الباقي للسائق (ر.س)</label><input id="h_rest" readonly></div>
   </div>
  </div>
- <div class="card"><h2>الباليتات</h2><div class="hint">رقم الباليت أرقام بس (حرف P بيتضاف لوحده). أي رقم غلط أو مكرر بيظهر باللون الأحمر.</div><div id="rows" style="margin-top:8px"></div>
-  <div class="grid2"><button class="btn2" id="bAdd" type="button">+ باليت جديد</button><button class="btn2" id="bAdd5" type="button">+ 5 باليتات بنفس البيانات</button></div>
+ <div class="card"><h2>الباليتات</h2><div class="hint">اختار الصنف والمواصفة الأول، وبعدين اكتب أرقام باليتاته (حرف P بيتضاف لوحده). الباليتات بتتجمع تحت كل صنف، وأي رقم غلط أو مكرر بيظهر باللون الأحمر.</div><div id="rows" style="margin-top:8px"></div>
  </div>
  <div class="card"><h2>ملخص الأصناف حسب المقاس</h2><div id="sum"></div></div>
  <div class="card alerts" id="alerts"></div>
- <div class="hint" style="text-align:center">نسخة v6 — تعمل بدون إنترنت بعد أول فتح · البيانات بتتحفظ على الجهاز تلقائياً</div>
+ <div class="hint" style="text-align:center">نسخة v7 — تعمل بدون إنترنت بعد أول فتح · البيانات بتتحفظ على الجهاز تلقائياً</div>
 </main>
 <div class="actions"><button class="btn" id="bPdf" type="button">PDF / واتساب</button><button class="btn2" id="bPrev" type="button">معاينة</button><button class="btn2" id="bShare" type="button">مشاركة</button><button class="btn3" id="bNew" type="button">باكينج جديد</button></div>
 <datalist id="dl_customer"></datalist><datalist id="dl_dest"></datalist><datalist id="dl_line"></datalist><datalist id="dl_driver"></datalist>
 <div id="pv"><div class="tb"><button class="btn" id="pvPdf" type="button">PDF / واتساب</button><button class="btn2" id="pvClose" type="button">إغلاق</button></div><div class="wrap" id="pvw"></div></div>
 <div id="busy">جاري تجهيز الـ PDF…</div><div id="toast"></div>
-<script src="html2canvas.min.js"></script><script src="jspdf.umd.min.js"></script><script src="pl-report.js?v=4"></script><script src="pdf-share.js?v=1"></script><script src="app.js?v=8"></script>
+<script src="html2canvas.min.js"></script><script src="jspdf.umd.min.js"></script><script src="pl-report.js?v=5"></script><script src="pdf-share.js?v=1"></script><script src="app.js?v=9"></script>
 <script>if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;let done=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!done){done=true;location.reload()}});
 navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{r.update();document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')r.update()})}).catch(()=>{})}</script>
 </body>
