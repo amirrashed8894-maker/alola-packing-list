@@ -145,19 +145,20 @@ table.sum th{background:var(--g);color:#fff}table.sum tr.sub td{background:#eaf5
    <div><label>النولون (ر.س)</label><input id="h_freight" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0"></div>
    <div><label>سلف السائق (ر.س) — اختياري</label><input id="h_adv" type="number" inputmode="decimal" min="0" step="0.01" placeholder="لا يوجد"></div>
    <div><label>الباقي للسائق (ر.س)</label><input id="h_rest" readonly></div>
+   <div><label>صافي الميزان بسكول (كجم) *</label><input id="h_scale" type="text" inputmode="decimal" dir="ltr" autocomplete="off" placeholder="الوزن الصافي من ميزان البسكول"><div class="msg" id="m_scale"></div></div>
   </div>
  </div>
  <div class="card"><h2>الباليتات</h2><div class="hint">اختار الصنف والمواصفة الأول، وبعدين اكتب أرقام باليتاته (حرف P بيتضاف لوحده). الباليتات بتتجمع تحت كل صنف، وأي رقم غلط أو مكرر بيظهر باللون الأحمر.</div><div id="rows" style="margin-top:8px"></div>
  </div>
  <div class="card"><h2>ملخص الأصناف حسب المقاس</h2><div id="sum"></div></div>
  <div class="card alerts" id="alerts"></div>
- <div class="hint" style="text-align:center">نسخة v7 — تعمل بدون إنترنت بعد أول فتح · البيانات بتتحفظ على الجهاز تلقائياً</div>
+ <div class="hint" style="text-align:center">نسخة v8 — تعمل بدون إنترنت بعد أول فتح · البيانات بتتحفظ على الجهاز تلقائياً</div>
 </main>
 <div class="actions"><button class="btn" id="bPdf" type="button">PDF / واتساب</button><button class="btn2" id="bPrev" type="button">معاينة</button><button class="btn2" id="bShare" type="button">مشاركة</button><button class="btn3" id="bNew" type="button">باكينج جديد</button></div>
 <datalist id="dl_customer"></datalist><datalist id="dl_dest"></datalist><datalist id="dl_line"></datalist><datalist id="dl_driver"></datalist>
 <div id="pv"><div class="tb"><button class="btn" id="pvPdf" type="button">PDF / واتساب</button><button class="btn2" id="pvClose" type="button">إغلاق</button></div><div class="wrap" id="pvw"></div></div>
 <div id="busy">جاري تجهيز الـ PDF…</div><div id="toast"></div>
-<script src="html2canvas.min.js"></script><script src="jspdf.umd.min.js"></script><script src="pl-report.js?v=5"></script><script src="pdf-share.js?v=1"></script><script src="app.js?v=9"></script>
+<script src="html2canvas.min.js"></script><script src="jspdf.umd.min.js"></script><script src="pl-report.js?v=6"></script><script src="pdf-share.js?v=1"></script><script src="app.js?v=10"></script>
 <script>if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;let done=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!done){done=true;location.reload()}});
 navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{r.update();document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')r.update()})}).catch(()=>{})}</script>
 </body>

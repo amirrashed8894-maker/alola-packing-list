@@ -30,7 +30,7 @@ const CSS=`@font-face{font-family:Cairo;font-weight:200 1000;src:url(fonts/cairo
 #plstage .inf>div{padding:${K(4)} 8px ${K(3)};border-left:1px solid #e3ece2;border-bottom:1px solid #e3ece2;display:flex;justify-content:space-between;align-items:baseline;gap:6px}
 #plstage .inf>div:nth-child(4n){border-left:0}
 #plstage .inf small{color:#6a7b68;font-size:${K(9.5)};white-space:nowrap}#plstage .inf b{font-size:${K(12)};font-weight:800;text-align:left}
-#plstage .k{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0 0 ${K(6)}}
+#plstage .k{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:0 0 ${K(6)}}
 #plstage .k>div{background:#f3f8f1;border:1px solid #c9e2c4;border-radius:10px;padding:${K(4)} 8px;text-align:center}
 #plstage .k small{display:block;color:#245c28;font-size:${K(10.5)};font-weight:800}
 #plstage .k b{display:block;font-size:${K(22)};color:#16700c;font-weight:800;line-height:1.15}
@@ -76,7 +76,7 @@ function summary(A){let b='';A.list.forEach(g=>{g.sizes.forEach((x,j)=>{const ct
 function palBlock(A){return '<div class="pns">'+A.list.map(g=>g.sizes.map(x=>`<div class="pn"><div class="h"><b>${e(g.v)} · مقاس <span dir="ltr"${/^MIX/.test(String(x.s||''))?' style="display:inline-block"':''}>${eS(x.s)}</span></b><span>${x.rows.length} باليت · ${nf(x.n)} كرتونة</span></div><div class="ids">${x.rows.map(r=>`<span>${e(r.P)}<em>(${r._n})</em></span>`).join('')}</div></div>`).join('')).join('')+'</div>'}
 function infoCell(l,v,ltr){return `<div><small>${l}</small><b${ltr?' dir="ltr"':''}>${e(v||'—')}</b></div>`}
 function pageHTML(d){const h=d.h,dt=parts(h.date),A=analyse(d.rows);const kind=h.kind||'براد';
- const fr=Number(h.freight)||0,adv=Number(h.adv)||0;
+ const fr=Number(h.freight)||0,adv=Number(h.adv)||0;const SC=Number(h.scale)||0;
  const info=[infoCell('العميل',h.customer),infoCell('الوجهة',h.dest),infoCell('رقم الحاوية / البراد',h.cont,1),infoCell('رقم جهاز التبريد',h.reefer,1),
   infoCell('رقم اللوط',h.lot,1),infoCell('تاريخ التحميل',dt.iso,1),infoCell('الخط الملاحي',h.line),infoCell('اسم السائق',h.driver),
   infoCell('المُصدّر','العلا'),infoCell('النولون (ر.س)',fr?nf(fr,2):'—',1),infoCell('سلف السائق (ر.س)',adv?nf(adv,2):'—',1),infoCell('الباقي للسائق (ر.س)',fr?nf(fr-adv,2):'—',1)].join('');
@@ -84,10 +84,10 @@ function pageHTML(d){const h=d.h,dt=parts(h.date),A=analyse(d.rows);const kind=h
  <div class="meta"><div>الرقم المرجعي: <b dir="ltr">${e(h.ref||'')}</b></div><div class="edt">تحريراً في: <b dir="ltr">${e(dt.slash)}</b></div></div>
  <div class="ttl"><div class="tt"><h1>باكينج ليست</h1><div class="en">PACKING LIST · LOADING</div></div><div class="pill">${e(kind)} <span dir="ltr">${e(h.cont||'—')}</span> · <span dir="ltr">${e(dt.dmy)}</span></div></div>
  <div class="inf">${info}</div>
- <div class="k"><div><small>عدد الباليتات</small><b>${A.P}</b></div><div><small>إجمالي الكراتين / الصناديق</small><b>${nf(A.N)}</b></div><div><small>الوزن الصافي (كجم)</small><b>${A.KG?nf(A.KG):'—'}</b></div><div><small>الأصناف · المقاسات</small><b>${A.list.length} · ${A.S}</b></div></div>
+ <div class="k"><div><small>عدد الباليتات</small><b>${A.P}</b></div><div><small>إجمالي الكراتين / الصناديق</small><b>${nf(A.N)}</b></div><div><small>الوزن الصافي (كجم)</small><b>${A.KG?nf(A.KG):'—'}</b></div><div><small style="white-space:nowrap;font-size:${K(9.5)}">صافي الميزان بسكول (كجم)</small><b>${SC?nf(SC,1):'—'}</b></div><div><small>الأصناف · المقاسات</small><b>${A.list.length} · ${A.S}</b></div></div>
  <h4><i></i>ملخص الأصناف حسب المقاس <small>— باليتات وكراتين كل مقاس، إجمالي كل صنف، والإجمالي العام</small></h4>${summary(A)}
  <h4><i></i>أرقام الباليتات <small>— مجمعة حسب الصنف والمقاس، وبين القوسين عدد الكراتين على الباليت</small></h4>${palBlock(A)}
- <div class="note">الوزن الصافي = عدد الكراتين × وزن الكرتونة من نوع الكرتون. بيانات الاستيراد لبرنامج العلا مدمجة داخل ملف الـ PDF.</div>
+ <div class="note">الوزن الصافي = عدد الكراتين × وزن الكرتونة من نوع الكرتون. صافي الميزان بسكول = الوزن الصافي من ميزان البسكول${SC&&A.KG?` (الفرق عن الوزن المحسوب: <span dir="ltr">${(SC-A.KG>=0?'+':'')+nf(SC-A.KG,1)}</span> كجم)`:''}. بيانات الاستيراد لبرنامج العلا مدمجة داخل ملف الـ PDF.</div>
  <div class="sg"><div>مسؤول التحميل</div><div>السائق${h.driver?': '+e(h.driver):''}</div><div>التوقيع والاعتماد</div></div>
  <div class="dep"><img src="rashed_logo_gray.png" alt=""><span>يعتمد: شركة الراشد للتجارة</span></div>
  </div>${foot(h,dt)}</div>`}
@@ -95,7 +95,7 @@ function pageHTML(d){const h=d.h,dt=parts(h.date),A=analyse(d.rows);const kind=h
 function fit(page){const body=page.querySelector('.body'),ft=page.querySelector('.foot');const avail=()=>ft.offsetTop-body.offsetTop-6;
  let k=1;page.style.setProperty('--k',k);while(body.scrollHeight>avail()&&k>0.62){k=Math.round((k-0.04)*100)/100;page.style.setProperty('--k',k)}
  if(body.scrollHeight>avail()){let s=1;body.style.transformOrigin='top right';for(let i=0;i<4;i++){s=avail()/body.scrollHeight;body.style.width=(794/s)+'px'}s=Math.min(s,avail()/body.scrollHeight);body.style.transform=`scale(${s})`;return{k,scale:Math.round(s*100)/100}}return{k,scale:1}}
-function aoa(d){const h=d.h;return [['باكينج ليست — شركة العلا'],['رقم الحاوية / البراد',h.cont||''],['تاريخ التحميل',h.date||''],['اسم العميل',h.customer||''],['رقم اللوط',h.lot||''],['الوجهة',h.dest||''],['الخط الملاحي',h.line||''],['اسم السائق',h.driver||''],['رقم جهاز التبريد',h.reefer||''],['المُصدر','العلا'],['نوع الشحنة',h.kind||''],['الرقم المرجعي',h.ref||''],[],
+function aoa(d){const h=d.h;return [['باكينج ليست — شركة العلا'],['رقم الحاوية / البراد',h.cont||''],['تاريخ التحميل',h.date||''],['اسم العميل',h.customer||''],['رقم اللوط',h.lot||''],['الوجهة',h.dest||''],['الخط الملاحي',h.line||''],['اسم السائق',h.driver||''],['رقم جهاز التبريد',h.reefer||''],['المُصدر','العلا'],['نوع الشحنة',h.kind||''],['الرقم المرجعي',h.ref||''],['صافي الميزان بسكول (كجم)',Number(h.scale)||''],[],
  ['رقم الباليت','الصنف','المقاس','نوع الكرتون','اسم الكرتون','عدد الكراتين','وزن الكرتونة (كجم)'],...d.rows.map(r=>[r.P,r.v||'',r.s||'',r.c||'',r.b||'',parseInt(r.n,10)||0,unitKg(r.c)||''])]}
 function embed(rows){const CT=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;CT[n]=c}
  const u=new TextEncoder().encode(JSON.stringify({v:1,app:'alola',kind:'load',rows}));let o='';for(let i=0;i<u.length;i+=32768)o+=String.fromCharCode.apply(null,u.subarray(i,i+32768));const b=btoa(o);let c=~0;for(let i=0;i<b.length;i++)c=CT[(c^b.charCodeAt(i))&255]^(c>>>8);return 'ALOLADATA1:'+b+':'+((~c)>>>0).toString(16).padStart(8,'0')}
