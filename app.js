@@ -1,4 +1,4 @@
-/* Alola packing list PWA v9 (entry like the production app) — form + validation + autosave. PDF in pl-report.js */
+/* Alola packing list PWA v10 (v10: «صافي الميزان بسكول» required; v9: entry like the production app) — form + validation + autosave. PDF in pl-report.js */
 (function(){
 'use strict';
 const $=id=>document.getElementById(id);
@@ -27,7 +27,11 @@ function syncRef(){if(!S.h.date)return false;if(refDay(S.h.ref)===S.h.date.repla
 /* فورم اتطبع يوم قديم واتفتح النهارده لعربية جديدة: التاريخ يبقى النهارده ورقم مرجعي جديد */
 let _reuse=false;if(S.h.issued&&String(S.h.issued).slice(0,10)<today()&&S.h.date&&S.h.date<today()){S.h.date=today();_reuse=true}
 const _fixed=syncRef();
-const HF=['ref','date','kind','exp','cont','reefer','lot','customer','dest','line','driver','freight','adv'];
+const HF=['ref','date','kind','exp','cont','reefer','lot','customer','dest','line','driver','freight','adv','scale'];
+/* v10: صافي الميزان بسكول (كجم) — إجباري، رقم أكبر من صفر (أرقام عربي/إنجليزي، الفاصلة «,» أو «٬» للآلاف بتتشال، «٫» = علامة عشرية). الفورم القديم من غيره بيفتح عادي بس مش هيطلع PDF قبل ما يتكتب */
+const scaleTxt=v=>AD(String(v??'')).replace(/٫/g,'.').replace(/[\s,٬]/g,'');
+const scaleSt=v=>{const t=scaleTxt(v);if(!t)return 'miss';if(!/^\d+(\.\d+)?$/.test(t)||!(parseFloat(t)>0))return 'err';return ''};
+const scaleKg=v=>scaleSt(v)?0:parseFloat(scaleTxt(v));
 /* Sun Fruit (T-13): pallet numbers SF-00001… beside Al Ola P numbers. SF rows keep r.p='SF-00001' (P rows stay digits). */
 const SFX=/^SF-?(\d{1,5})$/i;const isSF=x=>SFX.test(String(x||'').trim());const sfN=x=>{const m=String(x||'').trim().match(SFX);return m?'SF-'+String(parseInt(m[1],10)).padStart(5,'0'):''};const disp=x=>isSF(x)?sfN(x):'P'+x;const hexp=()=>(S&&S.h&&S.h.exp)||'العلا';const defPre=()=>/صن فروت/.test(hexp())?'SF':'P';
 const save=()=>{S._ts=Date.now();let okS=true;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){okS=false}const w=document.getElementById('fullWarn');if(w)w.style.display=okS?'none':'block'};
@@ -179,7 +183,7 @@ $('rows').addEventListener('click',ev=>{const t=ev.target;if(t.dataset.rm!=null)
 function focusP(i){const el=document.querySelector(`input[data-i="${i}"][data-k="p"]`);if(el){el.focus();el.scrollIntoView({block:'center'})}}
 function check(){const used=S.rows.filter(r=>r.p||r.v||r.s||r.n);const cnt={};used.forEach(r=>{const p=palKey(r);if(p)cnt[p]=(cnt[p]||0)+1});const errs=[];let bad=0;
  S.rows.forEach((r,i)=>{const o={};const any=r.p||r.v||r.s||r.n;if(any){if(!r.p)o.p='miss';else if(!validP(r))o.p='err';else if(cnt[palKey(r)]>1)o.p='dup';else if(!isSF(r.p)&&AD(r.p).length<4)o.short=1;['v','s','c','b'].forEach(k=>{if(!r[k])o[k]='miss'});/* MIX made in the new entry carries its breakdown (r.mix) and must add up; a plain «MIX» typed as a custom size in v16 stays valid as before */if(r.s==='MIX'&&Array.isArray(r.mix)&&(!mixOk(r)||parseInt(AD(r.n),10)!==mixSum(r)))o.s='err';if(!(parseInt(AD(r.n),10)>0)||!/^\d+$/.test(AD(r.n)))o.n=r.n?'err':'miss'}r._st=o;if(Object.keys(o).filter(k=>k!=='short').length)bad++});
- if(!S.h.cont)errs.push('رقم الحاوية / البراد ناقص');if(!S.h.date)errs.push('تاريخ التحميل ناقص');
+ if(!S.h.cont)errs.push('رقم الحاوية / البراد ناقص');if(!S.h.date)errs.push('تاريخ التحميل ناقص');const ss=scaleSt(S.h.scale);if(ss==='miss')errs.push('صافي الميزان بسكول ناقص — اكتب الوزن الصافي من ميزان البسكول بالكيلو');else if(ss==='err')errs.push('صافي الميزان بسكول لازم يكون رقم أكبر من صفر (بالكيلو)');
  const dups=Object.keys(cnt).filter(p=>cnt[p]>1);if(dups.length)errs.push('أرقام باليتات مكررة: '+dups.join('، '));const sh=S.rows.filter(r=>r._st&&r._st.short).length;
  if(bad)errs.push(bad+' باليت بياناتهم ناقصة أو غلط (باللون الأحمر/الأصفر)');if(!used.length)errs.push('مفيش باليتات');return{errs,used}}
 function upd(){const{errs,used}=check();
@@ -190,8 +194,10 @@ function upd(){const{errs,used}=check();
  $('stat').innerHTML=`${A.P} باليت<br>${nf(A.N)} كرتونة`;
  let b='';A.list.forEach(g=>{g.sizes.forEach((x,j)=>{b+=`<tr>${j?'':`<td rowspan="${g.sizes.length}"><b>${esc(g.v)}</b></td>`}<td dir="ltr">${esc(x.s)}</td><td>${x.rows.length}</td><td>${nf(x.n)}</td></tr>`});b+=`<tr class="sub"><td colspan="2">إجمالي ${esc(g.v)}</td><td>${g.p}</td><td>${nf(g.n)}</td></tr>`});
  $('sum').innerHTML=A.P?`<table class="sum"><tr><th>الصنف</th><th>المقاس</th><th>باليتات</th><th>كراتين / صناديق</th></tr>${b}<tr class="gt"><td colspan="2">الإجمالي العام</td><td>${A.P}</td><td>${nf(A.N)}</td></tr></table>`:'<div class="hint">لسه مفيش باليتات</div>';
- $('alerts').innerHTML=errs.length?errs.map(x=>`<div class="a-bad">⚠ ${esc(x)}</div>`).join(''):'<div class="a-ok">✔ البيانات كاملة — جاهز لعمل الـ PDF</div>';paintHeads()}
-function data(){return{h:{...S.h,cont:(S.h.cont||'').trim(),freight:AD(S.h.freight),adv:AD(S.h.adv)},rows:check().used.map(r=>({p:AD(r.p),P:palId(r),v:r.v,s:sizeLabel(r),c:r.c,b:r.b,n:AD(r.n)}))}}
+ {const se=$('h_scale'),sm=$('m_scale'),ss=scaleSt(S.h.scale);if(se){se.classList.toggle('miss',ss==='miss');se.classList.toggle('err',ss==='err')}if(sm)sm.textContent=ss==='miss'?'إجباري — مينفعش نطلع PDF من غيره':ss==='err'?'لازم رقم أكبر من صفر (بالكيلو)':''}
+ const SK=scaleKg(S.h.scale);if(A.P||SK)$('sum').innerHTML+=`<div class="hint" style="margin-top:6px">الوزن الصافي المحسوب: <b>${A.KG?nf(A.KG,1):'—'}</b> كجم · صافي الميزان بسكول: <b>${SK?nf(SK,1):'—'}</b> كجم${SK&&A.KG?` · الفرق: <b dir="ltr">${(SK-A.KG>=0?'+':'')+nf(SK-A.KG,1)}</b> كجم`:''}</div>`;
+ $('alerts').innerHTML=errs.length?errs.map(x=>`<div class="a-bad">⚠ ${esc(x)}</div>`).join(''):'<div class="a-ok">✔ البيانات كاملة — جاهز لعمل الـ PDF</div>';if(SK&&A.KG&&Math.abs(SK-A.KG)>A.KG*0.2)$('alerts').innerHTML+=`<div class="a-bad" style="background:#fff8e1;color:#8a5a00">⚠ تنبيه بس (مش بيمنع الـ PDF): صافي الميزان بسكول (${nf(SK,1)} كجم) بعيد عن الوزن المحسوب (${nf(A.KG,1)} كجم) بأكتر من 20% — راجع الرقم</div>`;paintHeads()}
+function data(){const h={...S.h,cont:(S.h.cont||'').trim(),freight:AD(S.h.freight),adv:AD(S.h.adv)};if(scaleSt(S.h.scale))delete h.scale;else h.scale=String(scaleKg(S.h.scale));return{h,rows:check().used.map(r=>({p:AD(r.p),P:palId(r),v:r.v,s:sizeLabel(r),c:r.c,b:r.b,n:AD(r.n)}))}}
 function ready(){const{errs}=check();if(errs.length){alert('مينفعش نطلع الـ PDF قبل تصليح:\n\n• '+errs.join('\n• '));return false}return true}
 function remember(){['customer','dest','line','driver'].forEach(k=>{const v=(S.h[k]||'').trim();if(v&&!HI[k].some(x=>x===v||(k==='customer'&&nameKey(x)===nameKey(v)))){HI[k].unshift(v);HI[k]=HI[k].slice(0,30)}});localStorage.setItem(HK,JSON.stringify(HI))}
 /* قبل الـ PDF: الرقم المرجعي لازم يكون بتاريخ التحميل، ولو نفس الفورم اتطبع قبل كده لعربية تانية → رقم جديد */
@@ -212,5 +218,5 @@ $('bNew').onclick=()=>{if(!confirm('بدء باكينج ليست جديد؟ ال
 window.APP={data,check,render:()=>{initHeader();renderRows()},set(x){S.h=x.h;S.rows=x.rows;save();initHeader();renderRows()}};
 initHeader();renderRows();save();
 if(_reuse)setTimeout(()=>toast('الفورم ده اتطبع يوم قديم ← التاريخ بقى النهارده ورقم مرجعي جديد '+S.h.ref),300);else if(_fixed)setTimeout(()=>toast('الرقم المرجعي اتظبط على تاريخ التحميل: '+S.h.ref),300);
-Object.defineProperty(window.APP,'S',{get:()=>S});window.APP.syncRef=syncRef;window.APP.nameKey=nameKey;window.APP.newRef=newRef;
+Object.defineProperty(window.APP,'S',{get:()=>S});window.APP.syncRef=syncRef;window.APP.nameKey=nameKey;window.APP.newRef=newRef;window.APP.scaleSt=scaleSt;window.APP.scaleKg=scaleKg;
 })();
