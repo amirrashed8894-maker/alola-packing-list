@@ -80,6 +80,7 @@ table.sum th{background:var(--g);color:#fff}table.sum tr.sub td{background:#eaf5
 #pp .nav{display:flex;align-items:center;gap:6px;margin:8px 12px 0}
 #pp .nav .rg{flex:1;text-align:center;font-weight:700;direction:ltr;font-size:15px}#pp .nav .rg small{display:block;font-weight:400;color:#666;font-size:12px;direction:rtl}
 #pp .nav button{min-height:42px;padding:4px 12px;background:#e8efe8;color:var(--g)}#pp .nav button:disabled{opacity:.35}
+#pp .pre{display:flex;gap:6px;align-items:center;margin:8px 12px 0;font-size:14px;color:#555}#pp .pre button{flex:1;min-height:40px;background:#fff;border:1.5px solid #ccc;border-radius:10px;font-weight:700;color:#444}#pp .pre button.on{background:#fff1e0;border-color:#d38a2a;color:#7a3e00}.pin.sf span{background:#fff1e0;color:#7a3e00}
 #pp .tools{display:flex;gap:6px;margin:8px 12px 0;flex-wrap:wrap}
 #pp .tools button{flex:1;min-height:46px;padding:4px 6px;background:#fff;border:1.5px solid var(--g2);color:var(--g);font-size:15px;font-weight:700}
 #pp .tools button:first-child{flex:1.7}#pp .tools button.on{background:#fff6dc;border-color:#d39e00;color:#7a5a00}
@@ -135,6 +136,7 @@ table.sum th{background:var(--g);color:#fff}table.sum tr.sub td{background:#eaf5
    <div><label>الرقم المرجعي <small style="font-weight:400;color:#64748b">(بتاريخ التحميل — بيتغير لوحده لو التاريخ اتغير)</small></label><input id="h_ref" readonly></div>
    <div><label>تاريخ التحميل *</label><input id="h_date" type="date"></div>
    <div><label>نوع الشحنة</label><select id="h_kind"><option>براد</option><option>حاوية</option></select></div>
+   <div><label>المُصدر (صاحب الحاوية)</label><select id="h_exp"><option>العلا</option><option>صن فروت</option></select></div>
    <div><label>رقم الحاوية / البراد *</label><input id="h_cont" dir="ltr" autocapitalize="characters" placeholder="مثال: BRD-1234"></div>
    <div><label>رقم جهاز التبريد</label><input id="h_reefer" dir="ltr" placeholder="مثال: GS-12345"></div>
    <div><label>رقم اللوط</label><input id="h_lot" dir="ltr" placeholder="لو أكتر من لوط افصل بفاصلة"></div>
@@ -157,7 +159,7 @@ table.sum th{background:var(--g);color:#fff}table.sum tr.sub td{background:#eaf5
 <datalist id="dl_customer"></datalist><datalist id="dl_dest"></datalist><datalist id="dl_line"></datalist><datalist id="dl_driver"></datalist>
 <div id="pv"><div class="tb"><button class="btn" id="pvPdf" type="button">PDF / واتساب</button><button class="btn2" id="pvClose" type="button">إغلاق</button></div><div class="wrap" id="pvw"></div></div>
 <div id="busy">جاري تجهيز الـ PDF…</div><div id="toast"></div>
-<script src="html2canvas.min.js"></script><script src="jspdf.umd.min.js"></script><script src="pl-report.js?v=5"></script><script src="pdf-share.js?v=1"></script><script src="app.js?v=9"></script>
+<script src="html2canvas.min.js"></script><script src="jspdf.umd.min.js"></script><script src="pl-report.js?v=6"></script><script src="pdf-share.js?v=1"></script><script src="app.js?v=10"></script>
 <script>if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;let done=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!done){done=true;location.reload()}});
 navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{r.update();document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')r.update()})}).catch(()=>{})}</script>
 </body>

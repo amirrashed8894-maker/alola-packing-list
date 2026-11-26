@@ -27,19 +27,21 @@ function syncRef(){if(!S.h.date)return false;if(refDay(S.h.ref)===S.h.date.repla
 /* فورم اتطبع يوم قديم واتفتح النهارده لعربية جديدة: التاريخ يبقى النهارده ورقم مرجعي جديد */
 let _reuse=false;if(S.h.issued&&String(S.h.issued).slice(0,10)<today()&&S.h.date&&S.h.date<today()){S.h.date=today();_reuse=true}
 const _fixed=syncRef();
-const HF=['ref','date','kind','cont','reefer','lot','customer','dest','line','driver','freight','adv'];
+const HF=['ref','date','kind','exp','cont','reefer','lot','customer','dest','line','driver','freight','adv'];
+/* Sun Fruit (T-13): pallet numbers SF-00001… beside Al Ola P numbers. SF rows keep r.p='SF-00001' (P rows stay digits). */
+const SFX=/^SF-?(\d{1,5})$/i;const isSF=x=>SFX.test(String(x||'').trim());const sfN=x=>{const m=String(x||'').trim().match(SFX);return m?'SF-'+String(parseInt(m[1],10)).padStart(5,'0'):''};const disp=x=>isSF(x)?sfN(x):'P'+x;const hexp=()=>(S&&S.h&&S.h.exp)||'العلا';const defPre=()=>/صن فروت/.test(hexp())?'SF':'P';
 const save=()=>{S._ts=Date.now();let okS=true;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){okS=false}const w=document.getElementById('fullWarn');if(w)w.style.display=okS?'none':'block'};
 /* v8: البرنامج مفتوح في تابتين على نفس الموبايل — التاب القديمة بتاخد آخر حفظ من التاب التانية بدل ما تمسحه */
 window.addEventListener('storage',e=>{if(e.key!==KEY||!e.newValue)return;let x;try{x=JSON.parse(e.newValue)}catch(_){return}if(!x||!x.h||!Array.isArray(x.rows)||(x._ts||0)<=(S._ts||0))return;S.h=x.h;S.rows=x.rows.length?x.rows:[blank()];S._ts=x._ts;try{initHeader();renderRows()}catch(_){}});
 function toast(t){const el=$('toast');el.textContent=t;el.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>el.style.display='none',2600)}
-function initHeader(){HF.forEach(k=>{const el=$('h_'+k);if(!el)return;el.value=S.h[k]??'';el.oninput=el.onchange=()=>{S.h[k]=k==='cont'?el.value.toUpperCase():el.value;if(k==='cont'&&el.value!==S.h[k]){const p=el.selectionStart;el.value=S.h[k];el.setSelectionRange(p,p)}if(k==='date'&&syncRef()){$('h_ref').value=S.h.ref;toast('اتغير التاريخ ← رقم مرجعي جديد: '+S.h.ref)}rest();save();upd()}});
+function initHeader(){HF.forEach(k=>{const el=$('h_'+k);if(!el)return;el.value=S.h[k]??(k==='exp'?'العلا':'');el.oninput=el.onchange=()=>{S.h[k]=k==='cont'?el.value.toUpperCase():el.value;if(k==='cont'&&el.value!==S.h[k]){const p=el.selectionStart;el.value=S.h[k];el.setSelectionRange(p,p)}if(k==='date'&&syncRef()){$('h_ref').value=S.h.ref;toast('اتغير التاريخ ← رقم مرجعي جديد: '+S.h.ref)}rest();save();upd()}});
  const ce=$('h_customer');if(ce)ce.onblur=()=>{const v=(S.h.customer||'').trim();if(!v)return;const k=nameKey(v);const hit=HI.customer.find(x=>x!==v&&nameKey(x)===k);if(hit){S.h.customer=hit;ce.value=hit;save();toast('العميل ده متسجل باسم «'+hit+'» — اتكتب بنفس الاسم')}};
  ['customer','dest','line','driver'].forEach(k=>{$('dl_'+k).innerHTML=HI[k].map(x=>`<option value="${esc(x)}">`).join('')});rest()}
 function rest(){const f=parseFloat(AD(S.h.freight))||0,a=parseFloat(AD(S.h.adv))||0;$('h_rest').value=f?nf(f-a,2):''}
 const opts=(k,v)=>{const L=LST(k);let o=`<option value="">— ${NAMES[k]} —</option>`+L.map(x=>`<option${x===v?' selected':''}>${esc(x)}</option>`).join('');if(v&&!L.includes(v))o+=`<option selected>${esc(v)}</option>`;return o+'<option value="__new">+ إضافة جديد…</option>'};
-const palId=r=>{const d=AD(r.p).replace(/\s+/g,'');return d?'P'+d:''};
-const palKey=r=>{const d=AD(r.p).replace(/\D/g,'');return d?'P'+String(parseInt(d,10)).padStart(4,'0'):''};
-const validP=r=>/^\d{1,11}$/.test(AD(r.p));
+const palId=r=>{if(isSF(r.p))return sfN(r.p);const d=AD(r.p).replace(/\s+/g,'');return d?'P'+d:''};
+const palKey=r=>{if(isSF(r.p))return sfN(r.p);const d=AD(r.p).replace(/\D/g,'');return d?'P'+String(parseInt(d,10)).padStart(4,'0'):''};
+const validP=r=>/^\d{1,11}$/.test(AD(r.p))||/^SF-\d{5}$/.test(String(r.p||''));
 /* ---------- v9: الإدخال زي برنامج الإنتاج — تختار الصنف/المواصفة الأول وبعدين أرقام باليتاته؛ الباليتات متجمعة تحت كل صنف ---------- */
 const SZL=()=>LST('s');
 function mixLines(r){return (Array.isArray(r&&r.mix)?r.mix:[]).map(x=>{const s=String(x&&x.s||'').trim();const n=AD(String(x&&x.n||'')).trim();if(!s||!/^[1-9]\d*$/.test(n))return null;return{s,n:parseInt(n,10)}}).filter(Boolean)}
@@ -58,8 +60,9 @@ function missing(W,keepN){const N={v:'الصنف',c:'نوع الكرتون',s:'�
 function recent(){let L=[];try{L=JSON.parse(localStorage.getItem(RK)||'[]')}catch(e){}if(!L.length){const cnt={};S.rows.forEach(r=>{if(r.p&&specOk(r)){const o=specOf(r),k=specK(o);cnt[k]=cnt[k]||{o,n:0};cnt[k].n++}});L=Object.values(cnt).sort((a,b)=>b.n-a.n).map(x=>x.o)}
  const seen=new Set(),out=[];L.forEach(o=>{if(!o||!specOk(o))return;const k=specK(o);if(seen.has(k))return;seen.add(k);out.push(o)});return out.slice(0,5)}
 function rememberSpec(W){const o=specOf(W);if(o.s==='MIX')o.n=String(mixSum(o));let L=[];try{L=JSON.parse(localStorage.getItem(RK)||'[]')}catch(e){}const k=specK(o);L=[o].concat(L.filter(x=>x&&specK(x)!==k)).slice(0,8);try{localStorage.setItem(RK,JSON.stringify(L))}catch(e){}}
-const pkey=d=>{d=AD(String(d||'')).replace(/\D/g,'');return d?'P'+String(parseInt(d,10)).padStart(4,'0'):''};
-function rangesOf(list){const a=list.slice().sort((x,y)=>parseInt(x,10)-parseInt(y,10));const out=[];let s=null,p=null;a.forEach(x=>{if(s!==null&&parseInt(x,10)===parseInt(p,10)+1){p=x;return}if(s!==null)out.push(s===p?'P'+s:'P'+s+' → P'+p);s=p=x});if(s!==null)out.push(s===p?'P'+s:'P'+s+' → P'+p);return out.join('، ')}
+const pkey=d=>{if(isSF(d))return sfN(d);d=AD(String(d||'')).replace(/\D/g,'');return d?'P'+String(parseInt(d,10)).padStart(4,'0'):''};
+function rangesOf(list){const sf=list.filter(isSF).map(sfN).sort(),pl=list.filter(x=>!isSF(x));const so=[];let a0=null,b0=null;sf.forEach(x=>{const n=parseInt(x.slice(3),10);if(a0!==null&&n===parseInt(b0.slice(3),10)+1){b0=x;return}if(a0!==null)so.push(a0===b0?a0:a0+' → '+b0);a0=b0=x});if(a0!==null)so.push(a0===b0?a0:a0+' → '+b0);const po=rangesP(pl);return [po,so.join('، ')].filter(Boolean).join('، ')}
+function rangesP(list){const a=list.slice().sort((x,y)=>parseInt(x,10)-parseInt(y,10));const out=[];let s=null,p=null;a.forEach(x=>{if(s!==null&&parseInt(x,10)===parseInt(p,10)+1){p=x;return}if(s!==null)out.push(s===p?'P'+s:'P'+s+' → P'+p);s=p=x});if(s!==null)out.push(s===p?'P'+s:'P'+s+' → P'+p);return out.join('، ')}
 let GR=[];
 function groups(){const G=[],M={};S.rows.forEach((r,i)=>{if(!filled(r))return;const k=gKey(r);const key=k||('?'+i);if(!M[key]){M[key]={key,inc:!k,rows:[],r};G.push(M[key])}M[key].rows.push(i)});return G}
 function renderRows(){const R=recent();const G=groups();GR=G;
@@ -67,7 +70,7 @@ function renderRows(){const R=recent();const G=groups();GR=G;
  const body=G.length?G.map((g,gi)=>{const r=g.r;const kg=PL.unitKg(r.c);
   const head=g.inc?`<div class="gh inc"><div class="gt2"><b>⚠ مواصفة ناقصة</b><small>${esc(['v','s','c','b'].filter(k=>r[k]).map(k=>k==='s'?'مقاس '+sizeLabel(r):r[k]).join(' · ')||'لسه متحددتش')}</small></div><div class="gc" data-gc="${gi}"></div></div>`
    :`<div class="gh"><div class="gt2"><b>${esc(r.v)} · ${r.s==='MIX'?'MIX':'مقاس '+esc(r.s)}</b>${r.s==='MIX'?`<small class="mx">${mixLines(r).map(x=>`<bdi dir="ltr">${esc(x.s)}×${x.n}</bdi>`).join(' + ')} كرتونة</small>`:''}<small>${esc(r.c)} · ${esc(r.b)}${kg?' · '+kg+' كجم/كرتونة':''}</small></div><div class="gc" data-gc="${gi}"></div></div>`;
-  const lines=g.rows.map((i,j)=>{const x=S.rows[i];const mix=x.s==='MIX';return `<div class="row pr" data-row="${i}"><div class="top"><div class="num">${j+1}</div><div class="pin"><span>P</span><input data-i="${i}" data-k="p" value="${esc(x.p)}" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="11" placeholder="رقم الباليت"></div><div class="pcn"><input data-i="${i}" data-k="n" type="number" inputmode="numeric" min="1" step="1" value="${esc(x.n)}"${mix?' readonly':''} aria-label="عدد الكراتين"><small>${mix?'كرتونة (MIX)':'كرتونة'}</small></div><button type="button" class="btn3 rmb" data-rm="${i}" title="حذف">حذف</button></div><div class="msg" data-m="${i}"></div></div>`}).join('');
+  const lines=g.rows.map((i,j)=>{const x=S.rows[i];const mix=x.s==='MIX';return `<div class="row pr" data-row="${i}"><div class="top"><div class="num">${j+1}</div><div class="pin${isSF(x.p)?' sf':''}"><span>${isSF(x.p)?'SF':'P'}</span><input data-i="${i}" data-k="p" value="${esc(x.p)}" ${isSF(x.p)?'dir="ltr" ':''}inputmode="${isSF(x.p)?'text':'numeric'}" pattern="[0-9]*" autocomplete="off" maxlength="11" placeholder="رقم الباليت"></div><div class="pcn"><input data-i="${i}" data-k="n" type="number" inputmode="numeric" min="1" step="1" value="${esc(x.n)}"${mix?' readonly':''} aria-label="عدد الكراتين"><small>${mix?'كرتونة (MIX)':'كرتونة'}</small></div><button type="button" class="btn3 rmb" data-rm="${i}" title="حذف">حذف</button></div><div class="msg" data-m="${i}"></div></div>`}).join('');
   const ft=`<div class="gf${g.inc?' one':''}">${g.inc?'':`<button type="button" class="btn2" data-gadd="${gi}">+ باليتات للصنف ده</button>`}<button type="button" class="${g.inc?'btn':'btn2'}" data-gedit="${gi}">${g.inc?'كمّل المواصفة':'تعديل المواصفة'}</button></div>`;
   return `<div class="grpc${g.inc?' inc':''}" data-g="${gi}">${head}${lines}${ft}</div>`}).join(''):'<div class="hint" style="text-align:center;padding:14px 0">لسه مفيش باليتات — دوس «+ باليتات جديدة» واختار الصنف الأول</div>';
  $('rows').innerHTML=bar+body;upd()}
@@ -97,21 +100,22 @@ function drawSpec(el){const W=cur.spec;const R=cur.edit?[]:recent();const mix=W.
  </div>
  <div class="ft"><button type="button" class="btn go" data-pp="tonums" ${specOk(W,keepN())?'':'style="background:#9db59f"'}>${goLabel(W)}</button></div>`}
 function inList(d){const k=pkey(d);return S.rows.some(r=>filled(r)&&r.p&&pkey(r.p)===k)}
-function addNum(d,quiet){d=AD(String(d||'')).replace(/\D/g,'');if(!d)return false;if(d.length>11){cur.msg='الرقم طويل أوي (11 رقم بالكتير)';return false}const k=pkey(d);
- if(cur.sel.some(x=>pkey(x)===k)){if(!quiet){const o=cur.sel.find(x=>pkey(x)===k);cur.msg=o===d?'P'+d+' مضاف قبل كده في القايمة دي':'P'+d+' هو نفس P'+o+' — مضاف قبل كده';}return false}
- if(inList(d)){cur.msg='⚠ P'+d+' موجود قبل كده في الباكينج ليست — مش هيتضاف مرتين';return false}
+function addNum(d,quiet){if(isSF(d))d=sfN(d);else{d=AD(String(d||'')).replace(/\D/g,'');if(!d)return false;if((cur.pre||defPre())==='SF'){if(d.length>5){cur.msg='رقم صن فروت 5 أرقام بالكتير (SF-00001)';return false}d='SF-'+String(parseInt(d,10)).padStart(5,'0')}else if(d.length>11){cur.msg='الرقم طويل أوي (11 رقم بالكتير)';return false}}const k=pkey(d);
+ if(cur.sel.some(x=>pkey(x)===k)){if(!quiet){const o=cur.sel.find(x=>pkey(x)===k);cur.msg=o===d?disp(d)+' مضاف قبل كده في القايمة دي':disp(d)+' هو نفس '+disp(o)+' — مضاف قبل كده';}return false}
+ if(inList(d)){cur.msg='⚠ '+disp(d)+' موجود قبل كده في الباكينج ليست — مش هيتضاف مرتين';return false}
  cur.sel.push(d);return true}
 function skipMsg(sk){if(!sk.length)return;cur.msg='اتشال '+sk.length+' رقم موجود قبل كده في الباكينج ليست أو في القايمة دي: '+rangesOf(sk)}
-function addNext(n){const last=cur.sel.length?cur.sel[cur.sel.length-1]:null;if(!last){cur.msg='اكتب أول رقم الأول ودوس «إضافة»';return}const w=last.length;let x=parseInt(last,10),c=0,g=0;const sk=[];while(c<n&&g<500){x++;g++;const d=String(x).padStart(w,'0');if(addNum(d,true))c++;else sk.push(d)}cur.msg='';skipMsg(sk)}
-function drawNums(el){const W=cur.spec;const k=cur.sel.length;const short=cur.sel.filter(d=>d.length<4);
+function addNext(n){const last=cur.sel.length?cur.sel[cur.sel.length-1]:null;if(!last){cur.msg='اكتب أول رقم الأول ودوس «إضافة»';return}const sfm=isSF(last);const w=last.length;let x=parseInt(sfm?last.slice(3):last,10),c=0,g=0;const sk=[];while(c<n&&g<500){x++;g++;const d=sfm?'SF-'+String(x).padStart(5,'0'):String(x).padStart(w,'0');if(addNum(d,true))c++;else sk.push(d)}cur.msg='';skipMsg(sk)}
+function drawNums(el){const W=cur.spec;const k=cur.sel.length;const short=cur.sel.filter(d=>!isSF(d)&&d.length<4);const pre=cur.pre||defPre();
  el.innerHTML=`<div class="h"><button type="button" data-pp="x">✕ إلغاء</button><b>أرقام الباليتات</b></div>${steps('nums')}
  <div class="sum"><div class="t">${specText(W)}</div><button type="button" data-pp="tospec">تعديل</button></div>
- <div class="ent"><div class="pin"><span>P</span><input id="ppn" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="11" placeholder="رقم الاستيكر"></div><button type="button" class="btn" data-pp="add">إضافة</button></div>
+ <div class="pre"><span>نوع الرقم:</span><button type="button" data-pre="P" class="${pre==='P'?'on':''}">P — العلا</button><button type="button" data-pre="SF" class="${pre==='SF'?'on':''}">SF — صن فروت</button></div>
+ <div class="ent"><div class="pin"><span>${pre==='SF'?'SF-':'P'}</span><input id="ppn" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="${pre==='SF'?5:11}" placeholder="رقم الاستيكر"></div><button type="button" class="btn" data-pp="add">إضافة</button></div>
  <div class="tools"><button type="button" data-pp="range" class="${cur.range?'on':''}">↔ من رقم لرقم</button><button type="button" data-addn="1">+1</button><button type="button" data-addn="5">+5</button><button type="button" data-addn="10">+10</button></div>
- ${cur.range?`<div class="rng"><div class="pin"><span>P</span><input id="ppa" inputmode="numeric" placeholder="من"></div><div class="pin"><span>P</span><input id="ppb" inputmode="numeric" placeholder="لحد"></div><button type="button" class="btn2" data-pp="addr">إضافة</button></div>`:''}
+ ${cur.range?`<div class="rng"><div class="pin"><span>${pre==='SF'?'SF-':'P'}</span><input id="ppa" inputmode="numeric" placeholder="من"></div><div class="pin"><span>${pre==='SF'?'SF-':'P'}</span><input id="ppb" inputmode="numeric" placeholder="لحد"></div><button type="button" class="btn2" data-pp="addr">إضافة</button></div>`:''}
  ${cur.msg?`<div class="hint2">${esc(cur.msg)}</div>`:''}
  ${short.length?`<div class="hint2">⚠ ${esc(short.map(d=>'P'+d).join('، '))}: أقصر من 4 أرقام — أرقام الإنتاج زي P${String(parseInt(short[0],10)).padStart(4,'0')}. المحطة هترفض الرقم لو مش متسجل كده في الإنتاج</div>`:''}
- <div class="grid">${k?cur.sel.map(d=>`<button type="button" class="c on${d.length<4?' sh':''}" data-unsel="${esc(d)}">P${esc(d)}<small> ✕</small></button>`).join(''):'<div class="none">اكتب رقم الاستيكر اللي على الباليت ودوس «إضافة»<br>وبعدها +1 / +5 / +10 للأرقام اللي بعده</div>'}</div>
+ <div class="grid">${k?cur.sel.map(d=>`<button type="button" class="c on${!isSF(d)&&d.length<4?' sh':''}" data-unsel="${esc(d)}">${esc(disp(d))}<small> ✕</small></button>`).join(''):'<div class="none">اكتب رقم الاستيكر اللي على الباليت ودوس «إضافة»<br>وبعدها +1 / +5 / +10 للأرقام اللي بعده</div>'}</div>
  <div class="ft"><div class="cnt"><b>${k}</b><div class="rgs">${k?esc(rangesOf(cur.sel)):'<span style="direction:rtl;display:block;color:#666">لسه مفيش أرقام</span>'}</div>${k?'<button type="button" data-pp="clr">مسح</button>':''}</div>
  <button type="button" class="btn go" data-pp="review" ${k?'':'disabled'}>${k?'مراجعة وتأكيد '+k+' باليت ←':'اكتب رقم واحد على الأقل'}</button></div>
  ${cur.confirm?`<div class="cf" data-pp="noconf"><div class="cfb" data-pp="none"><h3>هيتضاف ${k} باليت</h3><div class="big">${specText(W)}</div><div class="nums">${esc(rangesOf(cur.sel))}</div><div class="row2"><button type="button" class="btn2" data-pp="noconf">رجوع</button><button type="button" class="btn" data-pp="go">✓ تأكيد</button></div></div></div>`:''}`;
@@ -140,7 +144,7 @@ document.addEventListener('input',e=>{if(!cur||cur.step!=='spec')return;const t=
  if(t.id==='ppnn'){W.n=t.value;cur.nT=true}else if(t.dataset.mixn!==undefined){const m=W.mix[+t.dataset.mixn];if(m)m.n=t.value;W.n=String(mixSum(W)||'');const nn=$('ppnn');if(nn)nn.value=W.n;const ms=$('ppms');if(ms)ms.textContent='المجموع: '+mixSum(W)+' كرتونة'}else return;
  const go=document.querySelector('#pp [data-pp="tonums"]');if(go){const ok=specOk(W,keepN());go.style.background=ok?'':'#9db59f';go.textContent=goLabel(W)}});
 document.addEventListener('keydown',e=>{if(!cur||cur.step!=='nums'||e.key!=='Enter')return;if(e.target.id==='ppn'){e.preventDefault();document.querySelector('#pp [data-pp="add"]').click()}else if(e.target.id==='ppa'||e.target.id==='ppb'){e.preventDefault();document.querySelector('#pp [data-pp="addr"]').click()}});
-document.addEventListener('click',e=>{const t=e.target.closest('[data-pp],[data-sf],[data-sadd],[data-rec],[data-mixs],[data-nd],[data-addn],[data-unsel],[data-gadd],[data-gedit],#pAdd,#pLast');if(!t)return;
+document.addEventListener('click',e=>{const t=e.target.closest('[data-pp],[data-sf],[data-sadd],[data-rec],[data-mixs],[data-nd],[data-addn],[data-pre],[data-unsel],[data-gadd],[data-gedit],#pAdd,#pLast');if(!t)return;
  if(t.id==='pAdd'){openNew();return}
  if(t.id==='pLast'){const R=recent();if(R[0])startNums(JSON.parse(JSON.stringify(R[0])));return}
  if(t.dataset.gadd!==undefined){openAdd(+t.dataset.gadd);return}
@@ -151,7 +155,8 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-pp],[data-
  if(t.dataset.sadd){const f=t.dataset.sadd;const x=(prompt('اكتب '+NAMES[f]+' الجديد')||'').trim();if(x){if(!LST(f).includes(x)){XL[f].push(x);try{localStorage.setItem(XK,JSON.stringify(XL))}catch(_){}}setField(f,x)}cur.keep=true;draw();return}
  if(t.dataset.mixs){W.mix=W.mix||[];const j=W.mix.findIndex(m=>m.s===t.dataset.mixs);if(j<0)W.mix.push({s:t.dataset.mixs,n:''});else W.mix.splice(j,1);W.n=String(mixSum(W)||'');cur.keep=true;draw();return}
  if(t.dataset.nd){if(W.s==='MIX')return;W.n=String(Math.max(1,(parseInt(AD(W.n),10)||0)+(+t.dataset.nd)));cur.nT=true;const nn=$('ppnn');if(nn){nn.value=W.n;nn.dispatchEvent(new Event('input',{bubbles:true}))}return}
- if(t.dataset.addn){addNext(+t.dataset.addn);cur.keep=true;draw();return}
+ if(t.dataset.pre){cur.pre=t.dataset.pre;cur.focus=true;cur.keep=true;draw();return}
+if(t.dataset.addn){addNext(+t.dataset.addn);cur.keep=true;draw();return}
  if(t.dataset.unsel){cur.sel=cur.sel.filter(x=>x!==t.dataset.unsel);cur.keep=true;draw();return}
  const a=t.dataset.pp;
  if(a==='x'){closeS();return}
@@ -160,27 +165,27 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-pp],[data-
  if(a==='tospec'){cur.step='spec';cur.confirm=false;draw();return}
  if(a==='add'){const i=$('ppn');if(i&&i.value){addNum(i.value)}cur.focus=true;cur.keep=true;draw();return}
  if(a==='range'){cur.range=!cur.range;cur.focus=true;draw();return}
- if(a==='addr'){const A=AD(($('ppa')||{}).value||'').replace(/\D/g,''),B=AD(($('ppb')||{}).value||'').replace(/\D/g,'');if(!A||!B){cur.msg='اكتب أول رقم وآخر رقم';draw();return}const x=parseInt(A,10),y=parseInt(B,10);if(y<x||y-x>299){cur.msg='المدى غلط (لحد 300 باليت مرة واحدة)';draw();return}const w=A.length;const sk=[];for(let n=x;n<=y;n++){const d=String(n).padStart(w,'0');if(!addNum(d,true))sk.push(d)}cur.msg='';skipMsg(sk);cur.range=false;cur.keep=true;draw();return}
+ if(a==='addr'){const A=AD(($('ppa')||{}).value||'').replace(/\D/g,''),B=AD(($('ppb')||{}).value||'').replace(/\D/g,'');if(!A||!B){cur.msg='اكتب أول رقم وآخر رقم';draw();return}const x=parseInt(A,10),y=parseInt(B,10);if(y<x||y-x>299){cur.msg='المدى غلط (لحد 300 باليت مرة واحدة)';draw();return}const w=A.length;const sfr=(cur.pre||defPre())==='SF';const sk=[];for(let n=x;n<=y;n++){const d=sfr?'SF-'+String(n).padStart(5,'0'):String(n).padStart(w,'0');if(!addNum(d,true))sk.push(d)}cur.msg='';skipMsg(sk);cur.range=false;cur.keep=true;draw();return}
  if(a==='clr'){cur.sel=[];draw();return}
  if(a==='review'){if(cur.sel.length){cur.confirm=true;cur.keep=true;draw()}return}
  if(a==='noconf'){cur.confirm=false;cur.keep=true;draw();return}
  if(a==='go'){create();return}});
-$('rows').addEventListener('input',ev=>{const t=ev.target,i=+t.dataset.i,k=t.dataset.k;if(isNaN(i)||!k||t.tagName==='SELECT')return;let v=t.value;if(k==='p'){const c=AD(v).replace(/\D/g,'');if(c!==v){t.value=c}v=c}S.rows[i][k]=v;save();upd()});
+$('rows').addEventListener('input',ev=>{const t=ev.target,i=+t.dataset.i,k=t.dataset.k;if(isNaN(i)||!k||t.tagName==='SELECT')return;let v=t.value;if(k==='p'){if(/^\s*S/i.test(v)||isSF(S.rows[i].p)){const c=AD(v).toUpperCase().replace(/[^SF0-9-]/g,'');if(c!==v){t.value=c}v=c;const nn=sfN(c);if(nn&&/^SF-\d{5}$/.test(c))v=nn}else{const c=AD(v).replace(/\D/g,'');if(c!==v){t.value=c}v=c}}S.rows[i][k]=v;save();upd()});
 $('rows').addEventListener('change',ev=>{const t=ev.target,i=+t.dataset.i,k=t.dataset.k;if(t.tagName!=='SELECT')return;let v=t.value;
  if(v==='__new'){const x=(prompt('اكتب '+NAMES[k]+' الجديد')||'').trim();if(x){if(!LST(k).includes(x)){XL[k].push(x);localStorage.setItem(XK,JSON.stringify(XL))}v=x}else v=S.rows[i][k]||'';S.rows[i][k]=v;save();renderRows();return}
  S.rows[i][k]=v;if(k==='c'){const w=document.querySelector(`[data-w="${i}"]`);if(w)w.value=PL.unitKg(v)?PL.unitKg(v)+' كجم':'—'}save();upd()});
-$('rows').addEventListener('click',ev=>{const t=ev.target;if(t.dataset.rm!=null){const i=+t.dataset.rm;const r=S.rows[i];if((r.p||r.n)&&!confirm(r.p?'حذف الباليت P'+AD(r.p)+'؟':'حذف الباليت ده؟'))return;S.rows.splice(i,1);if(!S.rows.length)S.rows.push(blank());save();renderRows()}
+$('rows').addEventListener('click',ev=>{const t=ev.target;if(t.dataset.rm!=null){const i=+t.dataset.rm;const r=S.rows[i];if((r.p||r.n)&&!confirm(r.p?'حذف الباليت '+(isSF(r.p)?sfN(r.p):'P'+AD(r.p))+'؟':'حذف الباليت ده؟'))return;S.rows.splice(i,1);if(!S.rows.length)S.rows.push(blank());save();renderRows()}
 });
 function focusP(i){const el=document.querySelector(`input[data-i="${i}"][data-k="p"]`);if(el){el.focus();el.scrollIntoView({block:'center'})}}
 function check(){const used=S.rows.filter(r=>r.p||r.v||r.s||r.n);const cnt={};used.forEach(r=>{const p=palKey(r);if(p)cnt[p]=(cnt[p]||0)+1});const errs=[];let bad=0;
- S.rows.forEach((r,i)=>{const o={};const any=r.p||r.v||r.s||r.n;if(any){if(!r.p)o.p='miss';else if(!validP(r))o.p='err';else if(cnt[palKey(r)]>1)o.p='dup';else if(AD(r.p).length<4)o.short=1;['v','s','c','b'].forEach(k=>{if(!r[k])o[k]='miss'});/* MIX made in the new entry carries its breakdown (r.mix) and must add up; a plain «MIX» typed as a custom size in v16 stays valid as before */if(r.s==='MIX'&&Array.isArray(r.mix)&&(!mixOk(r)||parseInt(AD(r.n),10)!==mixSum(r)))o.s='err';if(!(parseInt(AD(r.n),10)>0)||!/^\d+$/.test(AD(r.n)))o.n=r.n?'err':'miss'}r._st=o;if(Object.keys(o).filter(k=>k!=='short').length)bad++});
+ S.rows.forEach((r,i)=>{const o={};const any=r.p||r.v||r.s||r.n;if(any){if(!r.p)o.p='miss';else if(!validP(r))o.p='err';else if(cnt[palKey(r)]>1)o.p='dup';else if(!isSF(r.p)&&AD(r.p).length<4)o.short=1;['v','s','c','b'].forEach(k=>{if(!r[k])o[k]='miss'});/* MIX made in the new entry carries its breakdown (r.mix) and must add up; a plain «MIX» typed as a custom size in v16 stays valid as before */if(r.s==='MIX'&&Array.isArray(r.mix)&&(!mixOk(r)||parseInt(AD(r.n),10)!==mixSum(r)))o.s='err';if(!(parseInt(AD(r.n),10)>0)||!/^\d+$/.test(AD(r.n)))o.n=r.n?'err':'miss'}r._st=o;if(Object.keys(o).filter(k=>k!=='short').length)bad++});
  if(!S.h.cont)errs.push('رقم الحاوية / البراد ناقص');if(!S.h.date)errs.push('تاريخ التحميل ناقص');
  const dups=Object.keys(cnt).filter(p=>cnt[p]>1);if(dups.length)errs.push('أرقام باليتات مكررة: '+dups.join('، '));const sh=S.rows.filter(r=>r._st&&r._st.short).length;
  if(bad)errs.push(bad+' باليت بياناتهم ناقصة أو غلط (باللون الأحمر/الأصفر)');if(!used.length)errs.push('مفيش باليتات');return{errs,used}}
 function upd(){const{errs,used}=check();
  S.rows.forEach((r,i)=>{const row=document.querySelector(`[data-row="${i}"]`);if(!row)return;const st=r._st||{};row.classList.toggle('dup',st.p==='dup');row.classList.toggle('short',!!st.short);
   row.querySelectorAll('[data-k]').forEach(el=>{const k=el.dataset.k,s=st[k];el.classList.toggle('err',s==='err'||s==='dup');el.classList.toggle('miss',s==='miss')});
-  const m=row.querySelector('[data-m]');m.textContent=st.p==='err'?'رقم الباليت لازم يكون أرقام بس':st.p==='dup'?'رقم الباليت ده متكرر (نفس رقم باليت تاني — مثلاً 1 و 0001)':st.short?'⚠ الرقم أقصر من 4 أرقام — أرقام الإنتاج زي P'+String(parseInt(AD(r.p),10)).padStart(4,'0')+'. المحطة هترفض P'+AD(r.p)+' لو مش متسجل كده في الإنتاج':st.n==='err'?'عدد الكراتين لازم رقم صحيح أكبر من صفر':st.s==='err'?'تفصيل MIX ناقص أو مجموعه مش مساوي للعدد — دوس «تعديل المواصفة»':(st.v||st.s||st.c||st.b)?'مواصفة الباليت ناقصة — دوس «كمّل المواصفة»':''});
+  const m=row.querySelector('[data-m]');m.textContent=st.p==='err'?'رقم الباليت لازم يكون أرقام بس (أو SF-00001 لصن فروت)':st.p==='dup'?'رقم الباليت ده متكرر (نفس رقم باليت تاني — مثلاً 1 و 0001)':st.short?'⚠ الرقم أقصر من 4 أرقام — أرقام الإنتاج زي P'+String(parseInt(AD(r.p),10)).padStart(4,'0')+'. المحطة هترفض P'+AD(r.p)+' لو مش متسجل كده في الإنتاج':st.n==='err'?'عدد الكراتين لازم رقم صحيح أكبر من صفر':st.s==='err'?'تفصيل MIX ناقص أو مجموعه مش مساوي للعدد — دوس «تعديل المواصفة»':(st.v||st.s||st.c||st.b)?'مواصفة الباليت ناقصة — دوس «كمّل المواصفة»':''});
  const A=PL.analyse(used.filter(r=>validP(r)).map(r=>({...r,P:palId(r),n:AD(r.n),s:sizeLabel(r)})));
  $('stat').innerHTML=`${A.P} باليت<br>${nf(A.N)} كرتونة`;
  let b='';A.list.forEach(g=>{g.sizes.forEach((x,j)=>{b+=`<tr>${j?'':`<td rowspan="${g.sizes.length}"><b>${esc(g.v)}</b></td>`}<td dir="ltr">${esc(x.s)}</td><td>${x.rows.length}</td><td>${nf(x.n)}</td></tr>`});b+=`<tr class="sub"><td colspan="2">إجمالي ${esc(g.v)}</td><td>${g.p}</td><td>${nf(g.n)}</td></tr>`});

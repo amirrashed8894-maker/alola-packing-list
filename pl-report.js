@@ -79,7 +79,7 @@ function pageHTML(d){const h=d.h,dt=parts(h.date),A=analyse(d.rows);const kind=h
  const fr=Number(h.freight)||0,adv=Number(h.adv)||0;
  const info=[infoCell('العميل',h.customer),infoCell('الوجهة',h.dest),infoCell('رقم الحاوية / البراد',h.cont,1),infoCell('رقم جهاز التبريد',h.reefer,1),
   infoCell('رقم اللوط',h.lot,1),infoCell('تاريخ التحميل',dt.iso,1),infoCell('الخط الملاحي',h.line),infoCell('اسم السائق',h.driver),
-  infoCell('المُصدّر','العلا'),infoCell('النولون (ر.س)',fr?nf(fr,2):'—',1),infoCell('سلف السائق (ر.س)',adv?nf(adv,2):'—',1),infoCell('الباقي للسائق (ر.س)',fr?nf(fr-adv,2):'—',1)].join('');
+  infoCell('المُصدّر',h.exp||'العلا'),infoCell('النولون (ر.س)',fr?nf(fr,2):'—',1),infoCell('سلف السائق (ر.س)',adv?nf(adv,2):'—',1),infoCell('الباقي للسائق (ر.س)',fr?nf(fr-adv,2):'—',1)].join('');
  return `<div class="page">${mast()}<div class="body">
  <div class="meta"><div>الرقم المرجعي: <b dir="ltr">${e(h.ref||'')}</b></div><div class="edt">تحريراً في: <b dir="ltr">${e(dt.slash)}</b></div></div>
  <div class="ttl"><div class="tt"><h1>باكينج ليست</h1><div class="en">PACKING LIST · LOADING</div></div><div class="pill">${e(kind)} <span dir="ltr">${e(h.cont||'—')}</span> · <span dir="ltr">${e(dt.dmy)}</span></div></div>
@@ -95,7 +95,7 @@ function pageHTML(d){const h=d.h,dt=parts(h.date),A=analyse(d.rows);const kind=h
 function fit(page){const body=page.querySelector('.body'),ft=page.querySelector('.foot');const avail=()=>ft.offsetTop-body.offsetTop-6;
  let k=1;page.style.setProperty('--k',k);while(body.scrollHeight>avail()&&k>0.62){k=Math.round((k-0.04)*100)/100;page.style.setProperty('--k',k)}
  if(body.scrollHeight>avail()){let s=1;body.style.transformOrigin='top right';for(let i=0;i<4;i++){s=avail()/body.scrollHeight;body.style.width=(794/s)+'px'}s=Math.min(s,avail()/body.scrollHeight);body.style.transform=`scale(${s})`;return{k,scale:Math.round(s*100)/100}}return{k,scale:1}}
-function aoa(d){const h=d.h;return [['باكينج ليست — شركة العلا'],['رقم الحاوية / البراد',h.cont||''],['تاريخ التحميل',h.date||''],['اسم العميل',h.customer||''],['رقم اللوط',h.lot||''],['الوجهة',h.dest||''],['الخط الملاحي',h.line||''],['اسم السائق',h.driver||''],['رقم جهاز التبريد',h.reefer||''],['المُصدر','العلا'],['نوع الشحنة',h.kind||''],['الرقم المرجعي',h.ref||''],[],
+function aoa(d){const h=d.h;return [['باكينج ليست — شركة العلا'],['رقم الحاوية / البراد',h.cont||''],['تاريخ التحميل',h.date||''],['اسم العميل',h.customer||''],['رقم اللوط',h.lot||''],['الوجهة',h.dest||''],['الخط الملاحي',h.line||''],['اسم السائق',h.driver||''],['رقم جهاز التبريد',h.reefer||''],['المُصدر',h.exp||'العلا'],['صاحب الحاوية',h.exp||'العلا'],['نوع الشحنة',h.kind||''],['الرقم المرجعي',h.ref||''],[],
  ['رقم الباليت','الصنف','المقاس','نوع الكرتون','اسم الكرتون','عدد الكراتين','وزن الكرتونة (كجم)'],...d.rows.map(r=>[r.P,r.v||'',r.s||'',r.c||'',r.b||'',parseInt(r.n,10)||0,unitKg(r.c)||''])]}
 function embed(rows){const CT=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;CT[n]=c}
  const u=new TextEncoder().encode(JSON.stringify({v:1,app:'alola',kind:'load',rows}));let o='';for(let i=0;i<u.length;i+=32768)o+=String.fromCharCode.apply(null,u.subarray(i,i+32768));const b=btoa(o);let c=~0;for(let i=0;i<b.length;i++)c=CT[(c^b.charCodeAt(i))&255]^(c>>>8);return 'ALOLADATA1:'+b+':'+((~c)>>>0).toString(16).padStart(8,'0')}
