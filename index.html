@@ -48,7 +48,7 @@ button{font-family:inherit;font-size:16px;min-height:48px;border:0;border-radius
 .actions button{font-size:14px;padding:6px 4px}
 table.sum{width:100%;border-collapse:collapse;font-size:14px}
 table.sum th,table.sum td{border:1px solid #ddd;padding:6px;text-align:center}
-table.sum th{background:var(--g);color:#fff}table.sum tr.sub td{background:#eaf5e6;font-weight:700}table.sum tr.gt td{background:var(--g);color:#fff;font-weight:800}
+table.sum th{background:var(--g);color:#fff}.ncalc{margin-top:8px;background:#f3f8f1;border:1px solid #c9e2c4;border-radius:10px;padding:8px 10px;font-size:14px;line-height:1.7}.ncalc .big{font-size:16px;color:#16700c}table.tare input{min-height:38px;width:90px;text-align:center}table.tare tr.unk td{background:#fff1f0}.tdel{min-height:34px;padding:2px 8px;font-size:12px;background:#fdecea;color:var(--bad)}#tareCard summary{cursor:pointer;list-style:revert}table.sum tr.sub td{background:#eaf5e6;font-weight:700}table.sum tr.gt td{background:var(--g);color:#fff;font-weight:800}
 .alerts div{padding:8px 10px;border-radius:10px;margin-bottom:6px;font-size:14px}
 .a-bad{background:#fdecea;color:var(--bad)}.a-ok{background:#e6f4ea;color:#137333}
 .hint{font-size:12.5px;color:#777}
@@ -145,20 +145,21 @@ table.sum th{background:var(--g);color:#fff}table.sum tr.sub td{background:#eaf5
    <div><label>النولون (ر.س)</label><input id="h_freight" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0"></div>
    <div><label>سلف السائق (ر.س) — اختياري</label><input id="h_adv" type="number" inputmode="decimal" min="0" step="0.01" placeholder="لا يوجد"></div>
    <div><label>الباقي للسائق (ر.س)</label><input id="h_rest" readonly></div>
-   <div><label>صافي الميزان بسكول (كجم) *</label><input id="h_scale" type="text" inputmode="decimal" dir="ltr" autocomplete="off" placeholder="الوزن الصافي من ميزان البسكول"><div class="msg" id="m_scale"></div></div>
+   <div><label>صافي الميزان بسكول (كجم) * <small style="font-weight:400;color:#64748b">= الوزن القائم</small></label><input id="h_scale" type="text" inputmode="decimal" dir="ltr" autocomplete="off" placeholder="الوزن الصافي من ميزان البسكول"><div class="msg" id="m_scale"></div></div>
   </div>
  </div>
  <div class="card"><h2>الباليتات</h2><div class="hint">اختار الصنف والمواصفة الأول، وبعدين اكتب أرقام باليتاته (حرف P بيتضاف لوحده). الباليتات بتتجمع تحت كل صنف، وأي رقم غلط أو مكرر بيظهر باللون الأحمر.</div><div id="rows" style="margin-top:8px"></div>
  </div>
  <div class="card"><h2>ملخص الأصناف حسب المقاس</h2><div id="sum"></div></div>
  <div class="card alerts" id="alerts"></div>
- <div class="hint" style="text-align:center">نسخة v8 — تعمل بدون إنترنت بعد أول فتح · البيانات بتتحفظ على الجهاز تلقائياً</div>
+ <div class="card"><details id="tareCard"><summary><h2 style="display:inline">⚖️ الأوزان الفاضية (لحساب الوزن الصافي)</h2></summary><div id="tares" style="margin-top:8px"></div></details></div>
+ <div class="hint" style="text-align:center">نسخة v19 — تعمل بدون إنترنت بعد أول فتح · البيانات بتتحفظ على الجهاز تلقائياً</div>
 </main>
 <div class="actions"><button class="btn" id="bPdf" type="button">PDF / واتساب</button><button class="btn2" id="bPrev" type="button">معاينة</button><button class="btn2" id="bShare" type="button">مشاركة</button><button class="btn3" id="bNew" type="button">باكينج جديد</button></div>
 <datalist id="dl_customer"></datalist><datalist id="dl_dest"></datalist><datalist id="dl_line"></datalist><datalist id="dl_driver"></datalist>
 <div id="pv"><div class="tb"><button class="btn" id="pvPdf" type="button">PDF / واتساب</button><button class="btn2" id="pvClose" type="button">إغلاق</button></div><div class="wrap" id="pvw"></div></div>
 <div id="busy">جاري تجهيز الـ PDF…</div><div id="toast"></div>
-<script src="html2canvas.min.js"></script><script src="jspdf.umd.min.js"></script><script src="pl-report.js?v=6"></script><script src="pdf-share.js?v=1"></script><script src="app.js?v=10"></script>
+<script src="html2canvas.min.js"></script><script src="jspdf.umd.min.js"></script><script src="tare.js?v=1"></script><script src="pl-report.js?v=7"></script><script src="pdf-share.js?v=1"></script><script src="app.js?v=11"></script>
 <script>if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;let done=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!done){done=true;location.reload()}});
 navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{r.update();document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')r.update()})}).catch(()=>{})}</script>
 </body>
