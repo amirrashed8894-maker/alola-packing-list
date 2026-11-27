@@ -1,4 +1,4 @@
-/* Alola packing list — one-page A4 PDF on Alola letterhead. v7 (Amir t419u): الوزن القائم = صافي ميزان البسكول، الصافي = القائم − الكراتين الفاضية − 20 كجم/باليت (tare.js، زي بيان التكلفة)، وجدول صغير بالأوزان الفاضية أعلى الشمال.
+/* Alola packing list — one-page A4 PDF on Alola letterhead. v8 (t199u): العميل عربي + English + كود العميل (سطور «اسم العميل (English)» و«كود العميل» في البيانات المدمجة؛ «اسم العميل» زي ما هو عشان النسخ القديمة). v7 (Amir t419u): الوزن القائم = صافي ميزان البسكول، الصافي = القائم − الكراتين الفاضية − 20 كجم/باليت (tare.js، زي بيان التكلفة)، وجدول صغير بالأوزان الفاضية أعلى الشمال.
    Embedded import data (read by Al-Ola Station 1.3.0 pdf-import.js):
    PDF Keywords + invisible text on page 1 = ALOLADATA1:<base64 utf-8 JSON {v:1,app:'alola',kind:'load',rows}>:<crc32> */
 (function(){
@@ -29,6 +29,7 @@ const CSS=`@font-face{font-family:Cairo;font-weight:200 1000;src:url(fonts/cairo
 #plstage .inf{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #d5ddd4;border-radius:8px;overflow:hidden;margin-bottom:${K(7)}}
 #plstage .inf>div{padding:${K(4)} 8px ${K(3)};border-left:1px solid #e3ece2;border-bottom:1px solid #e3ece2;display:flex;justify-content:space-between;align-items:baseline;gap:6px}
 #plstage .inf>div:nth-child(4n){border-left:0}
+#plstage .inf .cu b{display:flex;flex-direction:column;align-items:flex-end;line-height:1.15}#plstage .inf .cu i{font-style:normal;font-weight:700;font-size:${K(8)};color:#3e6434;max-width:100%;overflow-wrap:anywhere;text-align:left}
 #plstage .inf small{color:#6a7b68;font-size:${K(9.5)};white-space:nowrap}#plstage .inf b{font-size:${K(12)};font-weight:800;text-align:left}
 #plstage .k{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:0 0 ${K(6)}}
 #plstage .k>div{background:#f3f8f1;border:1px solid #c9e2c4;border-radius:10px;padding:${K(4)} 8px;text-align:center}
@@ -87,9 +88,10 @@ function calcBlock(N){const t=N.box.map(b=>`<tr><td class="f">${e(b.c)}${b.v?' <
  const f=N.gross==null?'<b class="u">الوزن الصافي مش محسوب — صافي ميزان البسكول مش مكتوب</b>':`<div><b>طريقة حساب الوزن الصافي (زي بيان التكلفة):</b></div><div>الوزن القائم (صافي ميزان البسكول) <b dir="ltr">${nf(N.gross,1)}</b> كجم</div><div>− وزن الكراتين / الصناديق الفاضية <b dir="ltr">${nf(N.cartonTare,1)}</b> كجم</div><div>− مستلزمات الباليتات <b dir="ltr">${nf(N.palletWeight,1)}</b> كجم (${nf(N.palletCount)} باليت × ${nf(N.palletUnit,2)} كجم)</div><div>= الوزن الصافي <b dir="ltr">${nf(N.net,1)}</b> كجم</div>`;
  return `<div class="nc"><div class="fx">${f}${N.unknown.length?`<div class="u">⚠ وزن فاضي مش متسجل: ${N.unknown.map(e).join('، ')}</div>`:''}</div><table class="tare"><caption>الأوزان الفاضية المخصومة (كجم)</caption><thead><tr><th>العبوة</th><th>فاضي/وحدة</th><th>العدد</th><th>الخصم</th></tr></thead><tbody>${t}</tbody></table></div>`}
 function infoCell(l,v,ltr){return `<div><small>${l}</small><b${ltr?' dir="ltr"':''}>${e(v||'—')}</b></div>`}
+function custCell(h){const ar=String(h.customer||'').trim(),en=String(h.customerEn||'').trim();if(!en)return infoCell('العميل',ar);return `<div class="cu"><small>العميل</small><b>${ar?e(ar)+'<i dir="ltr">'+e(en)+'</i>':'<span dir="ltr">'+e(en)+'</span>'}</b></div>`}
 function pageHTML(d){const h=d.h,dt=parts(h.date),NT=PLTare.calc(d.rows,Number(h.scale)||0,d.t||PLTare.load()),A=analyse(d.rows,NT.per);const kind=h.kind||'براد';
  const fr=Number(h.freight)||0,adv=Number(h.adv)||0;const SC=Number(h.scale)||0;
- const info=[infoCell('العميل',h.customer),infoCell('الوجهة',h.dest),infoCell('رقم الحاوية / البراد',h.cont,1),infoCell('رقم جهاز التبريد',h.reefer,1),
+ const info=[custCell(h),infoCell('الوجهة',h.dest),infoCell('رقم الحاوية / البراد',h.cont,1),infoCell('رقم جهاز التبريد',h.reefer,1),
   infoCell('رقم اللوط',h.lot,1),infoCell('تاريخ التحميل',dt.iso,1),infoCell('الخط الملاحي',h.line),infoCell('اسم السائق',h.driver),
   infoCell('المُصدّر',h.exp||'العلا'),infoCell('النولون (ر.س)',fr?nf(fr,2):'—',1),infoCell('سلف السائق (ر.س)',adv?nf(adv,2):'—',1),infoCell('الباقي للسائق (ر.س)',fr?nf(fr-adv,2):'—',1)].join('');
  return `<div class="page">${mast()}<div class="body">
@@ -112,7 +114,7 @@ function fit(page){const body=page.querySelector('.body'),ft=page.querySelector(
 function netMeta(d){const N=PLTare.calc(d.rows,Number(d.h.scale)||0,d.t||PLTare.load());return [['الوزن القائم (كجم) = صافي ميزان البسكول',N.gross==null?'':N.gross],
  ...N.box.map(b=>['وزن فاضي: '+b.c+(b.v?' ('+b.v+')':'')+' (كجم/وحدة × عدد = خصم)',b.known?b.unit:'',b.cartons,b.weight]),
  ['مستلزمات الباليت (كجم/باليت × عدد = خصم)',N.palletUnit,N.palletCount,N.palletWeight],['إجمالي الخصم (كجم)',N.tare],['الوزن الصافي (كجم)',N.net==null?'':N.net]]}
-function aoa(d){const h=d.h;return [['باكينج ليست — شركة العلا'],['رقم الحاوية / البراد',h.cont||''],['تاريخ التحميل',h.date||''],['اسم العميل',h.customer||''],['رقم اللوط',h.lot||''],['الوجهة',h.dest||''],['الخط الملاحي',h.line||''],['اسم السائق',h.driver||''],['رقم جهاز التبريد',h.reefer||''],['المُصدر',h.exp||'العلا'],['صاحب الحاوية',h.exp||'العلا'],['نوع الشحنة',h.kind||''],['الرقم المرجعي',h.ref||''],['صافي الميزان بسكول (كجم)',Number(h.scale)||''],...netMeta(d),[],
+function aoa(d){const h=d.h;return [['باكينج ليست — شركة العلا'],['رقم الحاوية / البراد',h.cont||''],['تاريخ التحميل',h.date||''],['اسم العميل',h.customer||h.customerEn||''],['اسم العميل (English)',h.customerEn||''],['كود العميل',h.custCode||''],['رقم اللوط',h.lot||''],['الوجهة',h.dest||''],['الخط الملاحي',h.line||''],['اسم السائق',h.driver||''],['رقم جهاز التبريد',h.reefer||''],['المُصدر',h.exp||'العلا'],['صاحب الحاوية',h.exp||'العلا'],['نوع الشحنة',h.kind||''],['الرقم المرجعي',h.ref||''],['صافي الميزان بسكول (كجم)',Number(h.scale)||''],...netMeta(d),[],
  ['رقم الباليت','الصنف','المقاس','نوع الكرتون','اسم الكرتون','عدد الكراتين','وزن الكرتونة (كجم)'],...d.rows.map(r=>[r.P,r.v||'',r.s||'',r.c||'',r.b||'',parseInt(r.n,10)||0,unitKg(r.c)||''])]}
 function embed(rows){const CT=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;CT[n]=c}
  const u=new TextEncoder().encode(JSON.stringify({v:1,app:'alola',kind:'load',rows}));let o='';for(let i=0;i<u.length;i+=32768)o+=String.fromCharCode.apply(null,u.subarray(i,i+32768));const b=btoa(o);let c=~0;for(let i=0;i<b.length;i++)c=CT[(c^b.charCodeAt(i))&255]^(c>>>8);return 'ALOLADATA1:'+b+':'+((~c)>>>0).toString(16).padStart(8,'0')}

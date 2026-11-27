@@ -139,8 +139,8 @@ table.sum th{background:var(--g);color:#fff}.ncalc{margin-top:8px;background:#f3
    <div><label>المُصدر (صاحب الحاوية)</label><select id="h_exp"><option>العلا</option><option>صن فروت</option></select></div>
    <div><label>رقم الحاوية / البراد *</label><input id="h_cont" dir="ltr" autocapitalize="characters" placeholder="مثال: BRD-1234"></div>
    <div><label>رقم جهاز التبريد</label><input id="h_reefer" dir="ltr" placeholder="مثال: GS-12345"></div>
+   <div style="grid-column:1/-1"><label>اسم العميل (عربي + إنجليزي) <small style="font-weight:400;color:#64748b">(العميل المعروف: اكتب اسم واحد والتاني بيتكتب لوحده)</small></label><input id="h_customer" list="dl_customer" placeholder="عربي — مثال: فاكهة الصيف"><input id="h_customerEn" list="dl_customer_en" dir="ltr" autocapitalize="characters" placeholder="English — e.g. SUMMER FRUIT TRADING COMPANY" style="margin-top:6px"></div>
    <div><label>رقم اللوط</label><input id="h_lot" dir="ltr" placeholder="لو أكتر من لوط افصل بفاصلة"></div>
-   <div><label>اسم العميل</label><input id="h_customer" list="dl_customer" placeholder="اكتب اسم العميل"></div>
    <div><label>الوجهة</label><input id="h_dest" list="dl_dest" placeholder="اكتب الوجهة"></div>
    <div><label>الخط الملاحي</label><input id="h_line" list="dl_line" placeholder="اكتب الخط الملاحي"></div>
    <div><label>اسم السائق</label><input id="h_driver" list="dl_driver"></div>
@@ -155,13 +155,13 @@ table.sum th{background:var(--g);color:#fff}.ncalc{margin-top:8px;background:#f3
  <div class="card"><h2>ملخص الأصناف حسب المقاس</h2><div id="sum"></div></div>
  <div class="card alerts" id="alerts"></div>
  <div class="card"><details id="tareCard"><summary><h2 style="display:inline">⚖️ الأوزان الفاضية (لحساب الوزن الصافي)</h2></summary><div id="tares" style="margin-top:8px"></div></details></div>
- <div class="hint" style="text-align:center">نسخة v20 — تعمل بدون إنترنت بعد أول فتح · البيانات بتتحفظ على الجهاز تلقائياً</div>
+ <div class="hint" style="text-align:center">نسخة v21 — تعمل بدون إنترنت بعد أول فتح · البيانات بتتحفظ على الجهاز تلقائياً</div>
 </main>
 <div class="actions"><button class="btn" id="bPdf" type="button">PDF / واتساب</button><button class="btn2" id="bPrev" type="button">معاينة</button><button class="btn2" id="bShare" type="button">مشاركة</button><button class="btn3" id="bNew" type="button">باكينج جديد</button></div>
-<datalist id="dl_customer"></datalist><datalist id="dl_dest"></datalist><datalist id="dl_line"></datalist><datalist id="dl_driver"></datalist>
+<datalist id="dl_customer"></datalist><datalist id="dl_customer_en"></datalist><datalist id="dl_dest"></datalist><datalist id="dl_line"></datalist><datalist id="dl_driver"></datalist>
 <div id="pv"><div class="tb"><button class="btn" id="pvPdf" type="button">PDF / واتساب</button><button class="btn2" id="pvClose" type="button">إغلاق</button></div><div class="wrap" id="pvw"></div></div>
 <div id="busy">جاري تجهيز الـ PDF…</div><div id="toast"></div>
-<script src="html2canvas.min.js"></script><script src="jspdf.umd.min.js"></script><script src="tare.js?v=1"></script><script src="pl-report.js?v=8"></script><script src="pdf-share.js?v=1"></script><script src="app.js?v=12"></script>
+<script src="html2canvas.min.js"></script><script src="jspdf.umd.min.js"></script><script src="tare.js?v=1"></script><script src="client-names.js?v=1"></script><script src="pl-report.js?v=9"></script><script src="pdf-share.js?v=1"></script><script src="app.js?v=13"></script>
 <script>if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;let done=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!done){done=true;location.reload()}});
 navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{r.update();document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')r.update()})}).catch(()=>{})}</script>
 </body>

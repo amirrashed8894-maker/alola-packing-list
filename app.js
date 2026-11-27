@@ -1,4 +1,4 @@
-/* Alola packing list PWA v11 (v11: الصافي = صافي ميزان البسكول − الكراتين الفاضية − 20 كجم/باليت زي بيان التكلفة + جدول «الأوزان الفاضية» قابل للتعديل، tare.js; v10: «صافي الميزان بسكول» required; v9: entry like the production app) — form + validation + autosave. PDF in pl-report.js */
+/* Alola packing list PWA v12 (v12 t199u: اسم العميل عربي + إنجليزي + كود العميل، client-names.js — برنامج العلا بيربط العميل بأي اسم فيهم); v11 (v11: الصافي = صافي ميزان البسكول − الكراتين الفاضية − 20 كجم/باليت زي بيان التكلفة + جدول «الأوزان الفاضية» قابل للتعديل، tare.js; v10: «صافي الميزان بسكول» required; v9: entry like the production app) — form + validation + autosave. PDF in pl-report.js */
 (function(){
 'use strict';
 const $=id=>document.getElementById(id);
@@ -9,7 +9,7 @@ const BASE={v:['أبو سرة','صيفي','موركيت كيني','موركيت 
 const NAMES={v:'الصنف',s:'المقاس',c:'نوع الكرتون',b:'اسم الكرتون'};
 const KEY='alola_packing_v1',XK='alola_packing_extra',HK='alola_packing_hist';
 let XL={};try{XL=JSON.parse(localStorage.getItem(XK))||{}}catch(e){}['v','s','c','b'].forEach(k=>XL[k]=XL[k]||[]);
-let HI={};try{HI=JSON.parse(localStorage.getItem(HK))||{}}catch(e){}['customer','dest','line','driver'].forEach(k=>HI[k]=HI[k]||[]);
+let HI={};try{HI=JSON.parse(localStorage.getItem(HK))||{}}catch(e){}['customer','dest','line','driver'].forEach(k=>HI[k]=HI[k]||[]);HI.pairs=Array.isArray(HI.pairs)?HI.pairs:[];
 const LST=k=>[...BASE[k],...XL[k].filter(x=>!BASE[k].includes(x))];
 const today=()=>new Date().toLocaleDateString('en-CA',{timeZone:'Africa/Cairo'});
 /* v5: الرقم المرجعي جواه تاريخ التحميل نفسه (مش يوم إنشاء الفورم) — PL-YYYYMMDD-HHMM-XXXX */
@@ -27,7 +27,17 @@ function syncRef(){if(!S.h.date)return false;if(refDay(S.h.ref)===S.h.date.repla
 /* فورم اتطبع يوم قديم واتفتح النهارده لعربية جديدة: التاريخ يبقى النهارده ورقم مرجعي جديد */
 let _reuse=false;if(S.h.issued&&String(S.h.issued).slice(0,10)<today()&&S.h.date&&S.h.date<today()){S.h.date=today();_reuse=true}
 const _fixed=syncRef();
-const HF=['ref','date','kind','exp','cont','reefer','lot','customer','dest','line','driver','freight','adv','scale'];
+const HF=['ref','date','kind','exp','cont','reefer','lot','customer','customerEn','dest','line','driver','freight','adv','scale'];
+/* v12 (t199u): العميل عربي + إنجليزي. العملاء المعروفين في client-names.js (نفس أكواد برنامج العلا C1…) + أي عميل جديد بيتحفظ على الجهاز بالاسمين */
+const CN=window.ClientNames;const pairs=()=>HI.pairs;
+function clientOf(q){if(!CN)return null;return CN.find(q,pairs())}
+function syncClient(from){const ar=(S.h.customer||'').trim(),en=(S.h.customerEn||'').trim();const c=clientOf(from==='en'?{en}:{ar});let msg='';
+ if(from==='ar'){if(!ar){if(S.h.custAuto){S.h.customerEn='';S.h.custAuto=false}delete S.h.custCode;return ''}
+  if(c){S.h.custCode=c.code||'';if(c.en&&(!en||S.h.custAuto)&&en!==c.en){S.h.customerEn=c.en;S.h.custAuto=true;msg='الاسم الإنجليزي: '+c.en}}else{delete S.h.custCode;if(S.h.custAuto){S.h.customerEn='';S.h.custAuto=false}}}
+ else{S.h.custAuto=false;if(!en){return ''}
+  if(c){if(c.en&&en!==c.en)S.h.customerEn=c.en;if(c.code)S.h.custCode=c.code;if(!ar&&c.ar){S.h.customer=c.ar;msg='الاسم العربي: '+c.ar}}}
+ return msg}
+
 /* v10: صافي الميزان بسكول (كجم) — إجباري، رقم أكبر من صفر (أرقام عربي/إنجليزي، الفاصلة «,» أو «٬» للآلاف بتتشال، «٫» = علامة عشرية). الفورم القديم من غيره بيفتح عادي بس مش هيطلع PDF قبل ما يتكتب */
 const scaleTxt=v=>AD(String(v??'')).replace(/٫/g,'.').replace(/[\s,٬]/g,'');
 const scaleSt=v=>{const t=scaleTxt(v);if(!t)return 'miss';if(!/^\d+(\.\d+)?$/.test(t)||!(parseFloat(t)>0))return 'err';return ''};
@@ -39,8 +49,15 @@ const save=()=>{S._ts=Date.now();let okS=true;try{localStorage.setItem(KEY,JSON.
 window.addEventListener('storage',e=>{if(e.key!==KEY||!e.newValue)return;let x;try{x=JSON.parse(e.newValue)}catch(_){return}if(!x||!x.h||!Array.isArray(x.rows)||(x._ts||0)<=(S._ts||0))return;S.h=x.h;S.rows=x.rows.length?x.rows:[blank()];S._ts=x._ts;try{initHeader();renderRows()}catch(_){}});
 function toast(t){const el=$('toast');el.textContent=t;el.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>el.style.display='none',2600)}
 function initHeader(){HF.forEach(k=>{const el=$('h_'+k);if(!el)return;el.value=S.h[k]??(k==='exp'?'العلا':'');el.oninput=el.onchange=()=>{S.h[k]=k==='cont'?el.value.toUpperCase():el.value;if(k==='cont'&&el.value!==S.h[k]){const p=el.selectionStart;el.value=S.h[k];el.setSelectionRange(p,p)}if(k==='date'&&syncRef()){$('h_ref').value=S.h.ref;toast('اتغير التاريخ ← رقم مرجعي جديد: '+S.h.ref)}rest();save();upd()}});
- const ce=$('h_customer');if(ce)ce.onblur=()=>{const v=(S.h.customer||'').trim();if(!v)return;const k=nameKey(v);const hit=HI.customer.find(x=>x!==v&&nameKey(x)===k);if(hit){S.h.customer=hit;ce.value=hit;save();toast('العميل ده متسجل باسم «'+hit+'» — اتكتب بنفس الاسم')}};
- ['customer','dest','line','driver'].forEach(k=>{$('dl_'+k).innerHTML=HI[k].map(x=>`<option value="${esc(x)}">`).join('')});rest()}
+ const ce=$('h_customer'),cee=$('h_customerEn');if(ce)ce.onblur=()=>{const v=(S.h.customer||'').trim();let t='';if(v){const k=nameKey(v);const L=[...HI.customer,...(CN?CN.MASTER.map(c=>c.ar).filter(Boolean):[])];const hit=L.find(x=>x!==v&&nameKey(x)===k);if(hit){S.h.customer=hit;ce.value=hit;t='العميل ده متسجل باسم «'+hit+'» — اتكتب بنفس الاسم'}}
+  const m=syncClient('ar');if(cee)cee.value=S.h.customerEn||'';save();if(t||m)toast([t,m].filter(Boolean).join(' · '))};
+ if(cee)cee.onblur=()=>{const m=syncClient('en');cee.value=S.h.customerEn||'';if(ce)ce.value=S.h.customer||'';save();if(m)toast(m)};
+ ['dest','line','driver'].forEach(k=>{$('dl_'+k).innerHTML=HI[k].map(x=>`<option value="${esc(x)}">`).join('')});
+ {const all=[...pairs(),...(CN?CN.MASTER:[])];const ar=[],en=[];const seenA=new Set(),seenE=new Set();
+  HI.customer.concat(all.map(c=>c.ar)).forEach(x=>{x=String(x||'').trim();if(!x||seenA.has(nameKey(x)))return;seenA.add(nameKey(x));const c=clientOf({ar:x});ar.push(`<option value="${esc(x)}"${c&&c.en?` label="${esc(c.en)}"`:''}>`)});
+  all.forEach(c=>{const x=String(c.en||'').trim();if(!x||seenE.has(CN.enKey(x)))return;seenE.add(CN.enKey(x));en.push(`<option value="${esc(x)}"${c.ar?` label="${esc(c.ar)}"`:''}>`)});
+  $('dl_customer').innerHTML=ar.join('');if($('dl_customer_en'))$('dl_customer_en').innerHTML=en.join('')}
+ rest()}
 function rest(){const f=parseFloat(AD(S.h.freight))||0,a=parseFloat(AD(S.h.adv))||0;$('h_rest').value=f?nf(f-a,2):''}
 const opts=(k,v)=>{const L=LST(k);let o=`<option value="">— ${NAMES[k]} —</option>`+L.map(x=>`<option${x===v?' selected':''}>${esc(x)}</option>`).join('');if(v&&!L.includes(v))o+=`<option selected>${esc(v)}</option>`;return o+'<option value="__new">+ إضافة جديد…</option>'};
 const palId=r=>{if(isSF(r.p))return sfN(r.p);const d=AD(r.p).replace(/\s+/g,'');return d?'P'+d:''};
@@ -224,11 +241,16 @@ function upd(){const{errs,used}=check();
  $('alerts').innerHTML=errs.length?errs.map(x=>`<div class="a-bad">⚠ ${esc(x)}</div>`).join(''):'<div class="a-ok">✔ البيانات كاملة — جاهز لعمل الـ PDF</div>';if(SK&&N.net!=null&&N.fruitSum&&Math.abs(N.net-N.fruitSum)>N.fruitSum*0.2)$('alerts').innerHTML+=`<div class="a-bad" style="background:#fff8e1;color:#8a5a00">⚠ تنبيه بس (مش بيمنع الـ PDF): الوزن الصافي (${nf(N.net,1)} كجم) بعيد عن عدد الكراتين × وزن الكرتونة (${nf(N.fruitSum,1)} كجم) بأكتر من 20% — راجع صافي ميزان البسكول</div>`;paintHeads();drawTares()}
 function data(){const h={...S.h,cont:(S.h.cont||'').trim(),freight:AD(S.h.freight),adv:AD(S.h.adv)};if(scaleSt(S.h.scale))delete h.scale;else h.scale=String(scaleKg(S.h.scale));return{h,t:TT(),rows:check().used.map(r=>({p:AD(r.p),P:palId(r),v:r.v,s:sizeLabel(r),c:r.c,b:r.b,n:AD(r.n)}))}}
 function ready(){const{errs}=check();if(errs.length){alert('مينفعش نطلع الـ PDF قبل تصليح:\n\n• '+errs.join('\n• '));return false}return true}
-function remember(){['customer','dest','line','driver'].forEach(k=>{const v=(S.h[k]||'').trim();if(v&&!HI[k].some(x=>x===v||(k==='customer'&&nameKey(x)===nameKey(v)))){HI[k].unshift(v);HI[k]=HI[k].slice(0,30)}});localStorage.setItem(HK,JSON.stringify(HI))}
+function remember(){['customer','dest','line','driver'].forEach(k=>{const v=(S.h[k]||'').trim();if(v&&!HI[k].some(x=>x===v||(k==='customer'&&nameKey(x)===nameKey(v)))){HI[k].unshift(v);HI[k]=HI[k].slice(0,30)}});
+ {const ar=(S.h.customer||'').trim(),en=(S.h.customerEn||'').trim();if(ar&&en&&CN){const known=CN.find({ar,en,code:S.h.custCode},[]);if(!known||known.ar!==ar||known.en!==en){HI.pairs=HI.pairs.filter(p=>!(p.ar&&nameKey(p.ar)===nameKey(ar))&&!(p.en&&CN.enKey(p.en)===CN.enKey(en)));HI.pairs.unshift({ar,en,code:(known&&known.code)||''});HI.pairs=HI.pairs.slice(0,60)}}}
+ localStorage.setItem(HK,JSON.stringify(HI))}
 /* قبل الـ PDF: الرقم المرجعي لازم يكون بتاريخ التحميل، ولو نفس الفورم اتطبع قبل كده لعربية تانية → رقم جديد */
 function refCheck(){if(syncRef())toast('الرقم المرجعي اتظبط على تاريخ التحميل: '+S.h.ref);const sg=sigOf(S.h);
  if(S.h.sig&&S.h.sig!==sg){if(confirm('الباكينج ليست ده اتطبع قبل كده برقم '+S.h.ref+' لعربية/عميل تاني.\n\nموافق = دي عربية جديدة (رقم مرجعي جديد)\nإلغاء = ده تصحيح لنفس العربية (نفس الرقم)'))S.h.ref=newRef(S.h.date)}
- if(!(S.h.customer||'').trim()&&!confirm('اسم العميل فاضي. تكمّل من غير عميل؟'))return false;return true}
+ {const ar=(S.h.customer||'').trim(),en=(S.h.customerEn||'').trim();if(!ar&&!en&&!confirm('اسم العميل فاضي. تكمّل من غير عميل؟'))return false;
+  if(ar&&!en&&!confirm('اسم العميل بالإنجليزي فاضي («'+ar+'»).\nاكتبه عشان برنامج العلا يربط العميل صح.\n\nموافق = تكمّل كده\nإلغاء = ارجع اكتبه'))return false;
+  if(!ar&&en&&!confirm('اسم العميل بالعربي فاضي («'+en+'»).\n\nموافق = تكمّل كده\nإلغاء = ارجع اكتبه'))return false}
+ return true}
 async function makePdf(){if(!ready())return null;if(!refCheck()){initHeader();return null}save();$('busy').style.display='flex';try{const d=data();const r=await PL.pdf(d);S.h.sig=sigOf(S.h);S.h.issued=new Date().toISOString();save();remember();initHeader();return{blob:r.blob,name:shareName(d.h)}}catch(e){alert('حصل خطأ أثناء تجهيز الـ PDF: '+e.message);return null}finally{$('busy').style.display='none'}}
 /* v6: اسم الملف عربي + الرقم المرجعي (الكود) */
 function shareName(h){const c=String(h.cont||'').trim().replace(/[\\/:*?"<>|]+/g,'-');return ['باكينج ليست العلا',h.ref,c,h.date].filter(Boolean).join(' — ')+'.pdf'}
