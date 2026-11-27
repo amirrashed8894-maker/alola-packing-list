@@ -1,4 +1,4 @@
-/* Alola packing list — one-page A4 PDF on Alola letterhead.
+/* Alola packing list — one-page A4 PDF on Alola letterhead. v7 (Amir t419u): الوزن القائم = صافي ميزان البسكول، الصافي = القائم − الكراتين الفاضية − 20 كجم/باليت (tare.js، زي بيان التكلفة)، وجدول صغير بالأوزان الفاضية أعلى الشمال.
    Embedded import data (read by Al-Ola Station 1.3.0 pdf-import.js):
    PDF Keywords + invisible text on page 1 = ALOLADATA1:<base64 utf-8 JSON {v:1,app:'alola',kind:'load',rows}>:<crc32> */
 (function(){
@@ -7,7 +7,7 @@ const nf=(x,d=0)=>Number(Math.round((Number(x)||0)*10**d)/10**d).toLocaleString(
 const VORDER=['أبو سرة','صيفي','موركيت كيني','موركيت إسباني','ليمون'];
 const vRank=v=>{const i=VORDER.indexOf(v);return i<0?50:i};
 const sRank=s=>{const n=parseFloat(s);return isNaN(n)?9999:n};
-const unitKg=c=>{const m=String(c||'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).match(/(\d+(?:\.\d+)?)\s*(?:ك|كجم|kg)/i);return m?parseFloat(m[1]):0};
+const add1=v=>PLTare.add1(v);const unitKg=c=>{const m=String(c||'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).match(/(\d+(?:\.\d+)?)\s*(?:ك|كجم|kg)/i);return m?parseFloat(m[1]):0};
 function parts(iso){const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(iso||'');if(!m)return{iso:iso||'—',dmy:iso||'—',slash:iso||'—'};return{iso,dmy:m[3]+'-'+m[2]+'-'+m[1],slash:m[3]+' / '+m[2]+' / '+m[1]}}
 const K=x=>`calc(var(--k)*${x}px)`;
 const CSS=`@font-face{font-family:Cairo;font-weight:200 1000;src:url(fonts/cairo-arabic.woff2) format('woff2');unicode-range:U+0600-06FF,U+0750-077F,U+FB50-FDFF,U+FE70-FEFF,U+200C-200E}
@@ -30,7 +30,7 @@ const CSS=`@font-face{font-family:Cairo;font-weight:200 1000;src:url(fonts/cairo
 #plstage .inf>div{padding:${K(4)} 8px ${K(3)};border-left:1px solid #e3ece2;border-bottom:1px solid #e3ece2;display:flex;justify-content:space-between;align-items:baseline;gap:6px}
 #plstage .inf>div:nth-child(4n){border-left:0}
 #plstage .inf small{color:#6a7b68;font-size:${K(9.5)};white-space:nowrap}#plstage .inf b{font-size:${K(12)};font-weight:800;text-align:left}
-#plstage .k{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:0 0 ${K(6)}}
+#plstage .k{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:0 0 ${K(6)}}
 #plstage .k>div{background:#f3f8f1;border:1px solid #c9e2c4;border-radius:10px;padding:${K(4)} 8px;text-align:center}
 #plstage .k small{display:block;color:#245c28;font-size:${K(10.5)};font-weight:800}
 #plstage .k b{display:block;font-size:${K(22)};color:#16700c;font-weight:800;line-height:1.15}
@@ -49,6 +49,13 @@ const CSS=`@font-face{font-family:Cairo;font-weight:200 1000;src:url(fonts/cairo
 #plstage .pn .h span{color:#4b5f4a;font-weight:700}
 #plstage .pn .ids{direction:ltr;text-align:left;font-size:${K(10)};line-height:1.5;color:#1c241c;font-weight:700;word-spacing:2px}
 #plstage .pn .ids span{display:inline-block;white-space:nowrap;margin-right:8px}#plstage .pn .ids em{font-style:normal;color:#5c735b;font-weight:600;font-size:${K(8.5)}}
+#plstage .k em{display:block;font-style:normal;font-size:${K(8.5)};color:#3e6434;font-weight:700;line-height:1.1}
+#plstage .nc{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin:0 0 ${K(4)}}
+#plstage .nc .fx{flex:1;font-size:${K(10)};color:#1c241c;line-height:1.45;background:#fbfdfb;border:1px solid #d5e6d1;border-radius:8px;padding:${K(3)} 8px}#plstage .nc .fx b{font-weight:800;color:#16700c}
+#plstage .u{color:#b42318!important;font-weight:800}
+#plstage table.tare{width:auto;flex:none;max-width:48%;font-size:${K(8.5)};margin:0;direction:rtl}#plstage table.tare caption{font-size:${K(8.5)};font-weight:800;color:#3d4a42;text-align:right;padding:0 0 1px}
+#plstage table.tare th{background:#f1f5f2;color:#16331a;border:1px solid #cfd8d2;padding:1px 4px;font-weight:800;white-space:nowrap}#plstage table.tare td{border:1px solid #cfd8d2;padding:1px 4px;line-height:1.25;white-space:nowrap}
+#plstage table.tare td.f{text-align:right;color:#3d4a42}#plstage table.tare tr.t td{background:#f1f5f2;font-weight:800}
 #plstage .note{font-size:${K(9)};color:#5c735b;margin:${K(2)} 2px}
 #plstage .sg{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:${K(14)};padding:0 8px;font-size:${K(11)};text-align:center}
 #plstage .sg div{border-top:1.5px solid #9fb59c;padding-top:4px;color:#2d3b2c;font-weight:700}
@@ -61,21 +68,26 @@ const CSS=`@font-face{font-family:Cairo;font-weight:200 1000;src:url(fonts/cairo
 function mast(){return `<div class="mast"><div><div class="nm">شركة العلا لفرز الحاصلات الزراعية</div><div class="sub">Al Ola for Agricultural Crops Sorting</div></div><img src="alola_logo_green.png" alt=""></div><div class="rule1"></div><div class="rulegap"></div><div class="rule2"></div>`}
 function foot(h,dt){return `<div class="foot"><div class="pmeta"><span dir="ltr">${e(h.ref||'')}</span><span>باكينج ليست — ${e(h.cont||'')} — <span dir="ltr">${e(dt.dmy)}</span></span><span>صفحة 1 من 1</span></div><div class="co"><div class="r"><span>العنوان: قطعة رقم ٢٠٦ ورقم ٢٠٨ - حوض البطن رقم ٥ - ترسا - طوخ - قليوبية</span><span dir="ltr">E-mail: alola.co2023@gmail.com</span></div><div class="ln"></div><div class="r"><span dir="ltr">Tel: 013/2604937 | Fax: 013/2604938</span><span>ب.ض 206232 · س.ت 798-899-781</span></div></div></div>`}
 // groups: variety -> size -> {pallets[], cartons, kg, ctypes}
-function analyse(rows){const R=rows.map(r=>({...r,_n:parseInt(r.n,10)||0,_kg:(parseInt(r.n,10)||0)*unitKg(r.c)}));const V=new Map();
- R.forEach(r=>{const v=r.v||'غير محدد';if(!V.has(v))V.set(v,new Map());const S=V.get(v);const s=String(r.s||'—');if(!S.has(s))S.set(s,{s,rows:[],n:0,kg:0,ct:new Map()});const g=S.get(s);g.rows.push(r);g.n+=r._n;g.kg+=r._kg;const ck=[r.c,r.b].filter(Boolean).join(' · ');g.ct.set(ck,(g.ct.get(ck)||0)+1)});
+function analyse(rows,per){const R=rows.map((r,i)=>({...r,_n:parseInt(r.n,10)||0,_kg:(parseInt(r.n,10)||0)*unitKg(r.c),_net:per&&per[i]!=null?per[i]:null}));const HN=!!(per&&per.some(x=>x!=null));const V=new Map();
+ R.forEach(r=>{const v=r.v||'غير محدد';if(!V.has(v))V.set(v,new Map());const S=V.get(v);const s=String(r.s||'—');if(!S.has(s))S.set(s,{s,rows:[],n:0,kg:0,net:0,ct:new Map()});const g=S.get(s);g.rows.push(r);g.n+=r._n;g.kg+=r._kg;g.net=add1([g.net,r._net||0]);const ck=[r.c,r.b].filter(Boolean).join(' · ');g.ct.set(ck,(g.ct.get(ck)||0)+1)});
  const list=[...V.entries()].map(([v,S])=>({v,sizes:[...S.values()].sort((a,b)=>sRank(a.s)-sRank(b.s)||String(a.s).localeCompare(String(b.s)))})).sort((a,b)=>vRank(a.v)-vRank(b.v)||a.v.localeCompare(b.v,'ar'));
- list.forEach(g=>{g.p=g.sizes.reduce((a,x)=>a+x.rows.length,0);g.n=g.sizes.reduce((a,x)=>a+x.n,0);g.kg=g.sizes.reduce((a,x)=>a+x.kg,0);g.sizes.forEach(x=>x.rows.sort((a,b)=>String(a.p).localeCompare(String(b.p),'en',{numeric:true})))});
- return{R,list,P:R.length,N:R.reduce((a,r)=>a+r._n,0),KG:R.reduce((a,r)=>a+r._kg,0),S:list.reduce((a,g)=>a+g.sizes.length,0)}}
+ list.forEach(g=>{g.p=g.sizes.reduce((a,x)=>a+x.rows.length,0);g.n=g.sizes.reduce((a,x)=>a+x.n,0);g.kg=g.sizes.reduce((a,x)=>a+x.kg,0);g.net=add1(g.sizes.map(x=>x.net));g.sizes.forEach(x=>x.rows.sort((a,b)=>String(a.p).localeCompare(String(b.p),'en',{numeric:true})))});
+ return{R,list,P:R.length,N:R.reduce((a,r)=>a+r._n,0),KG:R.reduce((a,r)=>a+r._kg,0),NET:HN?add1(R.map(r=>r._net||0)):null,HN,S:list.reduce((a,g)=>a+g.sizes.length,0)}}
 /* v5: a MIX size label «MIX (28×30، 32×50)» is drawn as one left-to-right unit (LRE…PDF, no-break spaces — the PDF renderer splits words and drew «32×50)» right-to-left) and shown with a Latin comma (the Arabic «،» is right-to-left and moved the bracket) so the closing bracket stays in place in the Arabic page (display only — the embedded data is unchanged) */
 const eS=s=>/^MIX/.test(String(s||''))?'\u202A'+e(String(s).replace(/،\s*/g,', ')).replace(/ /g,'\u00A0')+'\u202C':e(s);
 function summary(A){let b='';A.list.forEach(g=>{g.sizes.forEach((x,j)=>{const ct=[...x.ct.entries()].map(([k,c])=>e(k)+(x.ct.size>1?` <small>(${c})</small>`:'')).join('، ');
-  b+=`<tr>${j?'':`<td class="v" rowspan="${g.sizes.length}">${e(g.v)}</td>`}<td><b dir="ltr">${eS(x.s)}</b></td><td class="r">${ct}</td><td>${x.rows.length}</td><td>${nf(x.n)}</td><td>${x.kg?nf(x.kg):'—'}</td></tr>`});
-  b+=`<tr class="sub"><td class="r" colspan="3">إجمالي ${e(g.v)} — ${g.sizes.length} مقاس</td><td>${g.p}</td><td>${nf(g.n)}</td><td>${g.kg?nf(g.kg):'—'}</td></tr>`});
- b+=`<tr class="gt"><td class="r" colspan="3">الإجمالي العام — ${A.list.length} صنف · ${A.S} مقاس</td><td>${A.P}</td><td>${nf(A.N)}</td><td>${A.KG?nf(A.KG):'—'}</td></tr>`;
+  b+=`<tr>${j?'':`<td class="v" rowspan="${g.sizes.length}">${e(g.v)}</td>`}<td><b dir="ltr">${eS(x.s)}</b></td><td class="r">${ct}</td><td>${x.rows.length}</td><td>${nf(x.n)}</td><td>${A.HN?nf(x.net,1):'—'}</td></tr>`});
+  b+=`<tr class="sub"><td class="r" colspan="3">إجمالي ${e(g.v)} — ${g.sizes.length} مقاس</td><td>${g.p}</td><td>${nf(g.n)}</td><td>${A.HN?nf(g.net,1):'—'}</td></tr>`});
+ b+=`<tr class="gt"><td class="r" colspan="3">الإجمالي العام — ${A.list.length} صنف · ${A.S} مقاس</td><td>${A.P}</td><td>${nf(A.N)}</td><td>${A.HN?nf(A.NET,1):'—'}</td></tr>`;
  return `<table><thead><tr><th style="width:15%">الصنف</th><th style="width:9%">المقاس</th><th>نوع الكرتون · اسم الكرتون</th><th style="width:10%">باليتات</th><th style="width:14%">كراتين / صناديق</th><th style="width:14%">الوزن الصافي كجم</th></tr></thead><tbody>${b}</tbody></table>`}
 function palBlock(A){return '<div class="pns">'+A.list.map(g=>g.sizes.map(x=>`<div class="pn"><div class="h"><b>${e(g.v)} · مقاس <span dir="ltr"${/^MIX/.test(String(x.s||''))?' style="display:inline-block"':''}>${eS(x.s)}</span></b><span>${x.rows.length} باليت · ${nf(x.n)} كرتونة</span></div><div class="ids">${x.rows.map(r=>`<span>${e(r.P)}<em>(${r._n})</em></span>`).join('')}</div></div>`).join('')).join('')+'</div>'}
+/* v7: how the net was made (right) + the small table of empty weights used (left, like Station 1.4.9's tare box) */
+function calcBlock(N){const t=N.box.map(b=>`<tr><td class="f">${e(b.c)}${b.v?' <small>('+e(b.v)+')</small>':''}</td><td>${b.known?nf(b.unit,3):'<span class="u">؟</span>'}</td><td>${nf(b.cartons)}</td><td>${nf(b.weight,1)}</td></tr>`).join('')
+  +`<tr><td class="f">مستلزمات الباليت</td><td>${nf(N.palletUnit,2)}</td><td>${nf(N.palletCount)}</td><td>${nf(N.palletWeight,1)}</td></tr><tr class="t"><td class="f" colspan="3">إجمالي الخصم</td><td>${nf(N.tare,1)}</td></tr>`;
+ const f=N.gross==null?'<b class="u">الوزن الصافي مش محسوب — صافي ميزان البسكول مش مكتوب</b>':`<div><b>طريقة حساب الوزن الصافي (زي بيان التكلفة):</b></div><div>الوزن القائم (صافي ميزان البسكول) <b dir="ltr">${nf(N.gross,1)}</b> كجم</div><div>− وزن الكراتين / الصناديق الفاضية <b dir="ltr">${nf(N.cartonTare,1)}</b> كجم</div><div>− مستلزمات الباليتات <b dir="ltr">${nf(N.palletWeight,1)}</b> كجم (${nf(N.palletCount)} باليت × ${nf(N.palletUnit,2)} كجم)</div><div>= الوزن الصافي <b dir="ltr">${nf(N.net,1)}</b> كجم</div>`;
+ return `<div class="nc"><div class="fx">${f}${N.unknown.length?`<div class="u">⚠ وزن فاضي مش متسجل: ${N.unknown.map(e).join('، ')}</div>`:''}</div><table class="tare"><caption>الأوزان الفاضية المخصومة (كجم)</caption><thead><tr><th>العبوة</th><th>فاضي/وحدة</th><th>العدد</th><th>الخصم</th></tr></thead><tbody>${t}</tbody></table></div>`}
 function infoCell(l,v,ltr){return `<div><small>${l}</small><b${ltr?' dir="ltr"':''}>${e(v||'—')}</b></div>`}
-function pageHTML(d){const h=d.h,dt=parts(h.date),A=analyse(d.rows);const kind=h.kind||'براد';
+function pageHTML(d){const h=d.h,dt=parts(h.date),NT=PLTare.calc(d.rows,Number(h.scale)||0,d.t||PLTare.load()),A=analyse(d.rows,NT.per);const kind=h.kind||'براد';
  const fr=Number(h.freight)||0,adv=Number(h.adv)||0;const SC=Number(h.scale)||0;
  const info=[infoCell('العميل',h.customer),infoCell('الوجهة',h.dest),infoCell('رقم الحاوية / البراد',h.cont,1),infoCell('رقم جهاز التبريد',h.reefer,1),
   infoCell('رقم اللوط',h.lot,1),infoCell('تاريخ التحميل',dt.iso,1),infoCell('الخط الملاحي',h.line),infoCell('اسم السائق',h.driver),
@@ -84,10 +96,11 @@ function pageHTML(d){const h=d.h,dt=parts(h.date),A=analyse(d.rows);const kind=h
  <div class="meta"><div>الرقم المرجعي: <b dir="ltr">${e(h.ref||'')}</b></div><div class="edt">تحريراً في: <b dir="ltr">${e(dt.slash)}</b></div></div>
  <div class="ttl"><div class="tt"><h1>باكينج ليست</h1><div class="en">PACKING LIST · LOADING</div></div><div class="pill">${e(kind)} <span dir="ltr">${e(h.cont||'—')}</span> · <span dir="ltr">${e(dt.dmy)}</span></div></div>
  <div class="inf">${info}</div>
- <div class="k"><div><small>عدد الباليتات</small><b>${A.P}</b></div><div><small>إجمالي الكراتين / الصناديق</small><b>${nf(A.N)}</b></div><div><small>الوزن الصافي (كجم)</small><b>${A.KG?nf(A.KG):'—'}</b></div><div><small style="white-space:nowrap;font-size:${K(9.5)}">صافي الميزان بسكول (كجم)</small><b>${SC?nf(SC,1):'—'}</b></div><div><small>الأصناف · المقاسات</small><b>${A.list.length} · ${A.S}</b></div></div>
+ <div class="k"><div><small>عدد الباليتات</small><b>${A.P}</b></div><div><small>إجمالي الكراتين / الصناديق</small><b>${nf(A.N)}</b></div><div><small>الوزن القائم (كجم)</small><b>${NT.gross!=null?nf(NT.gross,1):'—'}</b><em>= صافي ميزان البسكول</em></div><div><small>الوزن الصافي (كجم)</small><b>${NT.net!=null?nf(NT.net,1):'—'}</b></div><div><small>الأصناف · المقاسات</small><b>${A.list.length} · ${A.S}</b></div></div>
+ ${calcBlock(NT)}
  <h4><i></i>ملخص الأصناف حسب المقاس <small>— باليتات وكراتين كل مقاس، إجمالي كل صنف، والإجمالي العام</small></h4>${summary(A)}
  <h4><i></i>أرقام الباليتات <small>— مجمعة حسب الصنف والمقاس، وبين القوسين عدد الكراتين على الباليت</small></h4>${palBlock(A)}
- <div class="note">الوزن الصافي = عدد الكراتين × وزن الكرتونة من نوع الكرتون. صافي الميزان بسكول = الوزن الصافي من ميزان البسكول${SC&&A.KG?` (الفرق عن الوزن المحسوب: <span dir="ltr">${(SC-A.KG>=0?'+':'')+nf(SC-A.KG,1)}</span> كجم)`:''}. بيانات الاستيراد لبرنامج العلا مدمجة داخل ملف الـ PDF.</div>
+ <div class="note">الوزن القائم = صافي ميزان البسكول. الوزن الصافي = القائم − (عدد الكراتين / الصناديق × وزن العبوة الفاضية) − ${nf(NT.palletUnit,2)} كجم مستلزمات لكل باليت — نفس طريقة بيان التكلفة، وصافي كل مقاس بنسبة كراتينه × وزن الكرتونة. بيانات الاستيراد لبرنامج العلا مدمجة داخل ملف الـ PDF.</div>
  <div class="sg"><div>مسؤول التحميل</div><div>السائق${h.driver?': '+e(h.driver):''}</div><div>التوقيع والاعتماد</div></div>
  <div class="dep"><img src="rashed_logo_gray.png" alt=""><span>يعتمد: شركة الراشد للتجارة</span></div>
  </div>${foot(h,dt)}</div>`}
@@ -95,7 +108,11 @@ function pageHTML(d){const h=d.h,dt=parts(h.date),A=analyse(d.rows);const kind=h
 function fit(page){const body=page.querySelector('.body'),ft=page.querySelector('.foot');const avail=()=>ft.offsetTop-body.offsetTop-6;
  let k=1;page.style.setProperty('--k',k);while(body.scrollHeight>avail()&&k>0.62){k=Math.round((k-0.04)*100)/100;page.style.setProperty('--k',k)}
  if(body.scrollHeight>avail()){let s=1;body.style.transformOrigin='top right';for(let i=0;i<4;i++){s=avail()/body.scrollHeight;body.style.width=(794/s)+'px'}s=Math.min(s,avail()/body.scrollHeight);body.style.transform=`scale(${s})`;return{k,scale:Math.round(s*100)/100}}return{k,scale:1}}
-function aoa(d){const h=d.h;return [['باكينج ليست — شركة العلا'],['رقم الحاوية / البراد',h.cont||''],['تاريخ التحميل',h.date||''],['اسم العميل',h.customer||''],['رقم اللوط',h.lot||''],['الوجهة',h.dest||''],['الخط الملاحي',h.line||''],['اسم السائق',h.driver||''],['رقم جهاز التبريد',h.reefer||''],['المُصدر',h.exp||'العلا'],['صاحب الحاوية',h.exp||'العلا'],['نوع الشحنة',h.kind||''],['الرقم المرجعي',h.ref||''],['صافي الميزان بسكول (كجم)',Number(h.scale)||''],[],
+/* v7: net meta rows (above the header row — Station import finds the table by «رقم الباليت», pallet columns unchanged) */
+function netMeta(d){const N=PLTare.calc(d.rows,Number(d.h.scale)||0,d.t||PLTare.load());return [['الوزن القائم (كجم) = صافي ميزان البسكول',N.gross==null?'':N.gross],
+ ...N.box.map(b=>['وزن فاضي: '+b.c+(b.v?' ('+b.v+')':'')+' (كجم/وحدة × عدد = خصم)',b.known?b.unit:'',b.cartons,b.weight]),
+ ['مستلزمات الباليت (كجم/باليت × عدد = خصم)',N.palletUnit,N.palletCount,N.palletWeight],['إجمالي الخصم (كجم)',N.tare],['الوزن الصافي (كجم)',N.net==null?'':N.net]]}
+function aoa(d){const h=d.h;return [['باكينج ليست — شركة العلا'],['رقم الحاوية / البراد',h.cont||''],['تاريخ التحميل',h.date||''],['اسم العميل',h.customer||''],['رقم اللوط',h.lot||''],['الوجهة',h.dest||''],['الخط الملاحي',h.line||''],['اسم السائق',h.driver||''],['رقم جهاز التبريد',h.reefer||''],['المُصدر',h.exp||'العلا'],['صاحب الحاوية',h.exp||'العلا'],['نوع الشحنة',h.kind||''],['الرقم المرجعي',h.ref||''],['صافي الميزان بسكول (كجم)',Number(h.scale)||''],...netMeta(d),[],
  ['رقم الباليت','الصنف','المقاس','نوع الكرتون','اسم الكرتون','عدد الكراتين','وزن الكرتونة (كجم)'],...d.rows.map(r=>[r.P,r.v||'',r.s||'',r.c||'',r.b||'',parseInt(r.n,10)||0,unitKg(r.c)||''])]}
 function embed(rows){const CT=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;CT[n]=c}
  const u=new TextEncoder().encode(JSON.stringify({v:1,app:'alola',kind:'load',rows}));let o='';for(let i=0;i<u.length;i+=32768)o+=String.fromCharCode.apply(null,u.subarray(i,i+32768));const b=btoa(o);let c=~0;for(let i=0;i<b.length;i++)c=CT[(c^b.charCodeAt(i))&255]^(c>>>8);return 'ALOLADATA1:'+b+':'+((~c)>>>0).toString(16).padStart(8,'0')}
@@ -112,7 +129,7 @@ function stage(){let st=document.getElementById('plstage');if(!st){st=document.c
 async function render(d){const st=stage();st.innerHTML=pageHTML(d);if(document.fonts&&document.fonts.ready)await document.fonts.ready;
  await Promise.all([...st.querySelectorAll('img')].map(img=>img.complete&&img.naturalWidth?1:new Promise(r=>{img.onload=img.onerror=r})));
  const page=st.querySelector('.page');const f=fit(page);return{st,page,f}}
-window.PL={CSS,aoa,analyse,unitKg,
+window.PL={CSS,aoa,analyse,unitKg,netOf:d=>PLTare.calc(d.rows,Number(d.h.scale)||0,d.t||PLTare.load()),
  fileName(h){const dt=parts(h.date);const c=String(h.cont||'').replace(/[^A-Za-z0-9-]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'')||'NA';const d=/^\d{4}-\d{2}-\d{2}$/.test(dt.iso)?dt.iso:new Date().toISOString().slice(0,10);return 'PackingList_'+c+'_'+d+'.pdf'},
  async preview(d,host){const{page,f}=await render(d);const cl=page.cloneNode(true);host.innerHTML='';host.appendChild(cl);return f},
  async pdf(d){const{st,page,f}=await render(d);const{jsPDF}=window.jspdf;const pdf=new jsPDF({unit:'pt',format:'a4',compress:true});const W=595.28,H=841.89;
